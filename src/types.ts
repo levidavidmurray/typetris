@@ -1,9 +1,9 @@
-export interface ShapeCoordinates {
+export interface ShapeElement {
 	id: string;
 	coordinates: number[][];
 }
 
-export interface GameCoordinates {
+export interface Vector {
 	x: number;
 	y: number;
 }
@@ -13,4 +13,11 @@ export enum Direction {
 	Left = "ArrowLeft",
 	Up = "ArrowUp",
 	Down = "ArrowDown",
+}
+
+export enum Keys {
+	W = "w",
+	A = "a",
+	S = "s",
+	D = "d",
 }

@@ -6,24 +6,23 @@
 				:style="{gridArea: 's'+index}"
 				class="coord"
 		>
-
 		</div>
 	</div>
 </template>
 
 <script lang="ts">
 	import {Component, Vue, Prop} from "vue-property-decorator";
-	import {ShapeCoordinates, GameCoordinates} from "@/types";
+	import {ShapeElement, Vector} from "@/types";
 	import uuidv4 from "uuid";
 
 	@Component
 	export default class Shape extends Vue {
 		@Prop() private type!: boolean[];
-		@Prop() private coords!: GameCoordinates;
+		@Prop() private coords!: Vector;
 		private id: string = uuidv4();
 
 		public created() {
-			const shapeCoordinates: ShapeCoordinates = {
+			const shapeCoordinates: ShapeElement = {
 				id: this.id,
 				coordinates: [],
 			};
@@ -31,11 +30,11 @@
 			this.type.forEach((coordBool, index) => {
 				if (coordBool) {
 					if (index < 3) {
-						shapeCoordinates.coordinates.push([index, 0]);
+						shapeCoordinates.coordinates.push([this.coords.x + index, this.coords.y]);
 					} else if (index >= 3 && index < 6) {
-						shapeCoordinates.coordinates.push([index - 3, 1]);
+						shapeCoordinates.coordinates.push([this.coords.x + index - 3, this.coords.y + 1]);
 					} else {
-						shapeCoordinates.coordinates.push([index - 6, 2]);
+						shapeCoordinates.coordinates.push([this.coords.x + index - 6, this.coords.y + 2]);
 					}
 				}
 			});
@@ -60,7 +59,7 @@
 		grid-template-areas: "s0 s1 s2" "s3 s4 s5" "s6 s7 s8";
 
 		.coord {
-			background-color: teal;
+			background-color: #f1ec23;
 		}
 	}
 </style>
