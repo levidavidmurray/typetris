@@ -1,6 +1,6 @@
 export interface ShapeElement {
 	id: string;
-	coordinates: number[][];
+	worldCoords: number[][];
 }
 
 export interface Vector {
@@ -26,9 +26,22 @@ export enum GameStatus {
 	Waiting = "Waiting",
 	InProgress = "InProgress",
 	Finished = "Finished",
+	Paused = "Paused",
 }
 
 export enum GameResult {
 	Won = "Won",
 	Lost = "Lost",
+}
+
+export interface GameShape {
+	id: string;
+	type: boolean[];
+	coordinates: Vector;
+	keyword: string;
+	worldCoords?: number[][];
+}
+
+export interface ShapeType {
+	[key: string]: boolean[];
 }

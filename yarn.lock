@@ -758,6 +758,11 @@
   resolved "https://registry.yarnpkg.com/@types/q/-/q-1.5.2.tgz#690a1475b84f2a884fd07cd797c00f5f31356ea8"
   integrity sha512-ce5d3q03Ex0sy4R14722Rmt6MT07Ua+k4FwDfdcToYJcMKNtRVQvJ6JCAPdAmAnbRb6CsX6aYb9m96NGod9uTw==
 
+"@types/rword@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@types/rword/-/rword-2.2.0.tgz#d0d10b5f61a08c6aa46b322a710936c4d7379b84"
+  integrity sha512-FafzSnUMz/Th5TNfh9fxnZnnviVMLHxEcNVCz3XP/vcHITwADCIVk19hmZROr8vx49c+y0ltnRssKvgmWu2YHQ==
+
 "@types/uuid@^3.4.4":
   version "3.4.4"
   resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-3.4.4.tgz#7af69360fa65ef0decb41fd150bf4ca5c0cefdf5"
@@ -6467,6 +6472,11 @@ run-queue@^1.0.0, run-queue@^1.0.3:
   integrity sha1-6Eg5bwV9Ij8kOGkkYY4laUFh7Ec=
   dependencies:
     aproba "^1.1.1"
+
+rword@^3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/rword/-/rword-3.1.1.tgz#1955f72596395de5222892975356dfb8893c50fb"
+  integrity sha512-8GV5kFvkNUmmNNw3iRDo2xoQHcApCnBAYCl7Vj58WHtAlZd3Zfl65d7Cn8sNTiReAGzhyVciMo6hdx51ccPmJg==
 
 safe-buffer@5.1.2, safe-buffer@^5.0.1, safe-buffer@^5.1.0, safe-buffer@^5.1.1, safe-buffer@^5.1.2, safe-buffer@~5.1.0, safe-buffer@~5.1.1:
   version "5.1.2"

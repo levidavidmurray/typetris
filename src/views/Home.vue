@@ -1,10 +1,11 @@
+import {Direction} from "../types";
 <template>
 	<div class="home">
 		<Shape
+				v-if="gameStarted && activeGameShape"
 				@shape-enter="setGameCoordinates"
-				:type="shapeType"
-				:coords="shapeVector"
-				:keyword="keyword"
+				:key="activeGameShape.id"
+				:game-shape="activeGameShape"
 				:user-input="userInput"
 		/>
 	</div>
@@ -12,27 +13,24 @@
 
 <script lang="ts">
 	import {Component, Vue, Watch} from "vue-property-decorator";
-	import {Direction, GameResult, GameStatus, ShapeElement, Vector} from "@/types";
+	import {Direction, GameResult, GameShape, GameStatus, ShapeElement, ShapeType, Vector} from "@/types";
 	import {ShapeBody} from "@/lib/ShapeBody";
 	import Shape from "@/components/Shape.vue";
 	import shapes from "@/shapes";
+	import uuidv4 from "uuid/v4";
 
-	const GAME_WIDTH: number = 15;
-	const GAME_HEIGHT: number = 15;
+	const WORD_STORE = ["plane", "vagabond", "eggnog", "hobbies", "solicit", "satisfy"];
+	const GAME_WIDTH: number = 30;
+	const GAME_HEIGHT: number = 23;
 	const GAME_SIZE: number = GAME_WIDTH * GAME_HEIGHT;
 
 	@Component({components: {Shape}})
 	export default class Home extends Vue {
-		public shapes = shapes;
-		public shapeVector: Vector = {x: 5, y: 0};
-		public shapeType = shapes.T;
+		public activeGameShape: GameShape | null = null;
 
-		public ready = false;
-
-		private activeShapeBody: ShapeElement = {id: "", coordinates: []};
+		private activeShapeBody: ShapeElement = {id: "", worldCoords: []};
 		private gameCoordinates: boolean[][] = [];
 
-		private keyword: string = "testing";
 		private userInput: string = "";
 
 		private gameInterval!: number;
@@ -40,43 +38,40 @@
 		private gameResult: GameResult = GameResult.Lost;
 
 		public created() {
-			for (let x = 0; x < GAME_WIDTH; x++) {
-				const xCoordinates: boolean[] = [];
-
-				for (let y = 0; y < GAME_HEIGHT; y++) {
-					xCoordinates.push(false);
-				}
-
-				this.gameCoordinates.push(xCoordinates);
-				this.$set(this, "gameCoordinates", this.gameCoordinates);
-			}
+			this.resetGameCoordinates();
+			this.generateGameShape();
 		}
 
 		public mounted() {
-			// setTimeout(() => {
-			// 	this.initializeKeyListeners();
-			// 	this.gameInterval = window.setInterval(() => {
-			// 		if (!this.moveActiveShape(Direction.Down)) {
-			// 			this.gameStatus = GameStatus.Finished;
-			// 			clearInterval(this.gameInterval);
-			// 		}
-			// 	}, 800);
-			// }, 2000);
+			setTimeout(() => {
+				this.gameStatus = GameStatus.InProgress;
+			}, 400);
+
+			setTimeout(() => {
+				this.initializeKeyListeners();
+				this.gameInterval = window.setInterval(() => {
+
+					if (this.activeGameShape && !this.isPaused) {
+
+						if (!this.moveActiveShape(Direction.Down)) {
+							this.gameStatus = GameStatus.Finished;
+							clearInterval(this.gameInterval);
+						}
+					}
+				}, 250);
+			}, 400);
 		}
 
 		public setGameCoordinates(shapeEl: ShapeElement) {
-			if (!this.ready) {
-				this.activeShapeBody = shapeEl;
-				this.$set(this, "activeShapeBody", this.activeShapeBody);
-			}
+			this.activeShapeBody = shapeEl;
+			this.$set(this, "activeShapeBody", this.activeShapeBody);
 
-			shapeEl.coordinates.forEach((coordinate: number[]) => {
+			shapeEl.worldCoords.forEach((coordinate: number[]) => {
 				const x = coordinate[0];
 				const y = coordinate[1];
 
 				this.gameCoordinates[x][y] = true;
 			});
-			this.ready = true;
 		}
 
 		@Watch("gameStatus")
@@ -84,48 +79,83 @@
 			if (gameStatus === GameStatus.Finished) {
 				window.clearInterval(this.gameInterval);
 
-				if (this.gameResult === GameResult.Won) {
-					console.log("YOU WON!");
-				} else {
+				if (this.gameResult === GameResult.Lost) {
 					console.log("YOU LOST :(");
+				} else {
+					console.log("Game ended!");
 				}
 			}
 		}
 
 		private initializeKeyListeners() {
 			window.addEventListener("keydown", (e) => {
-				if (e.keyCode >= 65 && e.keyCode <= 90) {
-					this.userInput += e.key;
-					console.log(this.userInput);
-					this.checkIfKeyword();
+				if (e.keyCode >= 65 && e.keyCode <= 90 && this.activeGameShape) {
+					const letter = e.key.toLowerCase();
+					const userLength = this.userInput.length;
+
+					if (letter === this.activeGameShape.keyword[userLength]) {
+						this.userInput += letter;
+					} else {
+						this.userInput = "";
+					}
 				}
 
-				if (e.keyCode === 8) {
-					this.userInput = this.userInput.substring(0, this.userInput.length - 1);
-					console.log(this.userInput);
+				// if (e.keyCode === 8) {
+				// 	this.userInput = this.userInput.substring(0, this.userInput.length - 1);
+				// }
+
+				if (e.keyCode === 13) {
+					const testInput = this.userInput;
+					this.userInput = "";
+					if (this.isKeyword(testInput)) {
+						console.log("IS KEYWORD");
+						this.activeGameShape = null;
+						this.resetGameCoordinates();
+
+						setTimeout(() => {
+							this.generateGameShape();
+						}, 300);
+					}
 				}
 			});
 		}
 
-		private checkIfKeyword() {
-			if (this.userInput === this.keyword) {
-				this.gameStatus = GameStatus.Finished;
-				this.gameResult = GameResult.Won;
+		private isKeyword(testInput: string) {
+			if (this.activeGameShape) {
+				return testInput === this.activeGameShape.keyword;
 			}
+
+			return false;
+		}
+
+		private generateGameShape() {
+			const randIndex: number = ShapeBody.getRandomInt(Object.keys(shapes).length);
+			const shapeType: boolean[] = shapes[Object.keys(shapes)[randIndex]];
+
+			this.activeGameShape = {
+				id: uuidv4(),
+				type: shapeType,
+				coordinates: {x: ShapeBody.getRandomInt(GAME_WIDTH - 3), y: 0},
+				keyword: WORD_STORE[ShapeBody.getRandomInt(WORD_STORE.length)]
+			};
 		}
 
 		private moveActiveShape(dir: Direction) {
-			if (this.isColliding(dir)) {
-				return false;
+			if (this.activeGameShape) {
+				if (this.isColliding(dir)) {
+					return false;
+				}
+
+				this.activeGameShape.coordinates = ShapeBody.appliedVector(dir, this.activeGameShape.coordinates);
+				this.updateActiveShapeBody(dir);
+				return true;
 			}
 
-			this.shapeVector = ShapeBody.appliedVector(dir, this.shapeVector);
-			this.updateActiveShapeBody(dir);
-			return true;
+			return false;
 		}
 
 		private updateActiveShapeBody(direction: Direction) {
-			const shapeBodyCoords = this.activeShapeBody.coordinates;
+			const shapeBodyCoords = this.activeShapeBody.worldCoords;
 			const newShapeBodyCoords: number[][] = [];
 
 			shapeBodyCoords.forEach((coords) => {
@@ -141,7 +171,7 @@
 				this.gameCoordinates[coords[0]][coords[1]] = true;
 			});
 
-			this.activeShapeBody.coordinates = newShapeBodyCoords;
+			this.activeShapeBody.worldCoords = newShapeBodyCoords;
 		}
 
 		/**
@@ -149,7 +179,7 @@
 		 * @param direction
 		 */
 		private isColliding(direction: Direction) {
-			const shapeGameCoords = this.activeShapeBody.coordinates;
+			const shapeGameCoords = this.activeShapeBody.worldCoords;
 
 			for (const coord of shapeGameCoords) {
 				const coords: Vector = ShapeBody.appliedVector(direction, {x: coord[0], y: coord[1]});
@@ -166,17 +196,39 @@
 			return false;
 		}
 
+		private resetGameCoordinates() {
+			const gameCoordinates: boolean[][] = [];
+			for (let x = 0; x < GAME_WIDTH; x++) {
+				const xCoordinates: boolean[] = [];
+
+				for (let y = 0; y < GAME_HEIGHT; y++) {
+					xCoordinates.push(false);
+				}
+
+				gameCoordinates.push(xCoordinates);
+			}
+			this.gameCoordinates = gameCoordinates;
+		}
+
 		/**
 		 * Check if the current shape's coordinates fall within the given vector
 		 * @param vector
 		 */
 		private shapeCoordsAreIn(vector: Vector) {
-			const shapeCoords = this.activeShapeBody.coordinates;
+			const shapeCoords = this.activeShapeBody.worldCoords;
 			return shapeCoords.some((coords: number[]) => coords[0] === vector.x && coords[1] === vector.y);
 		}
 
 		private coordsAreEmpty(vector: Vector) {
 			return !this.gameCoordinates[vector.x][vector.y];
+		}
+
+		get gameStarted() {
+			return this.gameStatus === GameStatus.InProgress;
+		}
+
+		get isPaused() {
+			return this.gameStatus === GameStatus.Paused;
 		}
 	}
 </script>
@@ -184,16 +236,12 @@
 <style lang="scss">
 	.home {
 		display: grid;
-		width: 512px;
-		height: 512px;
-		grid-template-columns: repeat(15, 1fr);
-		grid-template-rows: repeat(15, 1fr);
+		width: 1024px;
+		height: 768px;
+		grid-template-columns: repeat(30, 1fr);
+		grid-template-rows: repeat(23, 1fr);
 		grid-auto-rows: 34px;
 		grid-auto-columns: 34px;
 		background-color: #395a65;
-
-		.user-input {
-			position: absolute;
-		}
 	}
 </style>

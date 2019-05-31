@@ -8,44 +8,51 @@
 		>
 		</div>
 		<span class="keyword">
-			<span v-for="letter in keywordArray">{{ letter }}</span>
+			<span
+					v-for="(letter, index) in keywordArray"
+					:class="isLetterActive(letter, index)"
+			>{{ letter }}</span>
 		</span>
 	</div>
 </template>
 
 <script lang="ts">
 	import {Component, Vue, Prop} from "vue-property-decorator";
-	import {ShapeElement, Vector} from "@/types";
+	import {ShapeElement, Vector, GameShape} from "@/types";
 	import uuidv4 from "uuid";
+	import {ShapeBody} from "@/lib/ShapeBody";
 
 	@Component
 	export default class Shape extends Vue {
-		@Prop() private type!: boolean[];
-		@Prop() private coords!: Vector;
-		@Prop() private keyword!: string;
+		@Prop() private gameShape!: GameShape;
 		@Prop() private userInput!: string;
 
-		private id: string = uuidv4();
-
 		public created() {
-			const shapeCoordinates: ShapeElement = {
-				id: this.id,
-				coordinates: [],
-			};
+			const worldCoords: number[][] = ShapeBody.shapeConstruct(this.type, this.coords);
 
-			this.type.forEach((coordBool, index) => {
-				if (coordBool) {
-					if (index < 3) {
-						shapeCoordinates.coordinates.push([this.coords.x + index, this.coords.y]);
-					} else if (index >= 3 && index < 6) {
-						shapeCoordinates.coordinates.push([this.coords.x + index - 3, this.coords.y + 1]);
-					} else {
-						shapeCoordinates.coordinates.push([this.coords.x + index - 6, this.coords.y + 2]);
-					}
-				}
-			});
+			this.$emit("shape-enter", {id: this.id, worldCoords});
+		}
 
-			this.$emit("shape-enter", shapeCoordinates);
+		public isLetterActive(letter: string, index: number) {
+			if (this.userInput[index] === letter) {
+				return "active";
+			}
+		}
+
+		get id() {
+			return this.gameShape.id;
+		}
+
+		get type() {
+			return this.gameShape.type;
+		}
+
+		get coords() {
+			return this.gameShape.coordinates;
+		}
+
+		get keyword() {
+			return this.gameShape.keyword.toLowerCase();
 		}
 
 		get positionStyle() {
@@ -72,7 +79,7 @@
 		position: relative;
 
 		.coord {
-			background-color: #f1ec23;
+			background-color: #e24919;
 		}
 
 		.keyword {
@@ -82,6 +89,12 @@
 			right: 0;
 			top: 7px;
 			text-transform: uppercase;
+			font-weight: bold;
+			color: #2d2a2a;
+
+			.active {
+				color: #e8e515;
+			}
 		}
 	}
 </style>

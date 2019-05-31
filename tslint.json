@@ -16,6 +16,7 @@
     "no-console": false,
     "ordered-imports": false,
     "object-literal-sort-keys": false,
-    "no-consecutive-blank-lines": false
+    "no-consecutive-blank-lines": false,
+    "no-trailing-whitespace": false
   }
 }

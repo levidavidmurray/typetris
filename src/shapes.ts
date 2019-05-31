@@ -1,4 +1,6 @@
-export default {
+import {ShapeType} from "@/types";
+
+const shapeTypes: ShapeType = {
 	I: [
 		false, true, false,
 		false, true, false,
@@ -29,3 +31,5 @@ export default {
 		false, true, true,
 	],
 };
+
+export default shapeTypes;
