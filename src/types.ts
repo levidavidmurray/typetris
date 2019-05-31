@@ -21,3 +21,14 @@ export enum Keys {
 	S = "s",
 	D = "d",
 }
+
+export enum GameStatus {
+	Waiting = "Waiting",
+	InProgress = "InProgress",
+	Finished = "Finished",
+}
+
+export enum GameResult {
+	Won = "Won",
+	Lost = "Lost",
+}

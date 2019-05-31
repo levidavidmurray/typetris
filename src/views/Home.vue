@@ -1,14 +1,18 @@
 <template>
 	<div class="home">
-		<Shape @shape-enter="setGameCoordinates" :type="shapeType" :coords="shapeVector"/>
-		<Shape v-if="ready" @shape-enter="setGameCoordinates" :type="shapes.O" :coords="{x: 6, y: 6}"/>
-		<Shape v-if="ready" @shape-enter="setGameCoordinates" :type="shapes.Z" :coords="{x: 10, y: 3}"/>
+		<Shape
+				@shape-enter="setGameCoordinates"
+				:type="shapeType"
+				:coords="shapeVector"
+				:keyword="keyword"
+				:user-input="userInput"
+		/>
 	</div>
 </template>
 
 <script lang="ts">
-	import {Component, Vue} from "vue-property-decorator";
-	import {Direction, Vector, Keys, ShapeElement} from "@/types";
+	import {Component, Vue, Watch} from "vue-property-decorator";
+	import {Direction, GameResult, GameStatus, ShapeElement, Vector} from "@/types";
 	import {ShapeBody} from "@/lib/ShapeBody";
 	import Shape from "@/components/Shape.vue";
 	import shapes from "@/shapes";
@@ -20,13 +24,20 @@
 	@Component({components: {Shape}})
 	export default class Home extends Vue {
 		public shapes = shapes;
-		public shapeVector: Vector = {x: 0, y: 0};
+		public shapeVector: Vector = {x: 5, y: 0};
 		public shapeType = shapes.T;
 
 		public ready = false;
 
 		private activeShapeBody: ShapeElement = {id: "", coordinates: []};
 		private gameCoordinates: boolean[][] = [];
+
+		private keyword: string = "testing";
+		private userInput: string = "";
+
+		private gameInterval!: number;
+		private gameStatus: GameStatus = GameStatus.Waiting;
+		private gameResult: GameResult = GameResult.Lost;
 
 		public created() {
 			for (let x = 0; x < GAME_WIDTH; x++) {
@@ -42,27 +53,15 @@
 		}
 
 		public mounted() {
-			window.addEventListener("keypress", (e) => {
-				if (e.key === Keys.D && !this.isColliding(Direction.Right)) {
-					this.shapeVector.x++;
-					this.updateActiveShapeBody(Direction.Right);
-				}
-
-				if (e.key === Keys.A && !this.isColliding(Direction.Left)) {
-					this.shapeVector.x--;
-					this.updateActiveShapeBody(Direction.Left);
-				}
-
-				if (e.key === Keys.W && !this.isColliding(Direction.Up)) {
-					this.shapeVector.y--;
-					this.updateActiveShapeBody(Direction.Up);
-				}
-
-				if (e.key === Keys.S && !this.isColliding(Direction.Down)) {
-					this.shapeVector.y++;
-					this.updateActiveShapeBody(Direction.Down);
-				}
-			});
+			// setTimeout(() => {
+			// 	this.initializeKeyListeners();
+			// 	this.gameInterval = window.setInterval(() => {
+			// 		if (!this.moveActiveShape(Direction.Down)) {
+			// 			this.gameStatus = GameStatus.Finished;
+			// 			clearInterval(this.gameInterval);
+			// 		}
+			// 	}, 800);
+			// }, 2000);
 		}
 
 		public setGameCoordinates(shapeEl: ShapeElement) {
@@ -80,16 +79,50 @@
 			this.ready = true;
 		}
 
-		// private printGrid() {
-		// 	this.activeCoords = [];
-		// 	this.gameCoordinates.forEach((gridColumn, index) => {
-		// 		gridColumn.forEach((isActive, index2) => {
-		// 			if (isActive) {
-		// 				this.activeCoords.push({x: index, y: index2});
-		// 			}
-		// 		});
-		// 	});
-		// }
+		@Watch("gameStatus")
+		private onGameStatusChanged(gameStatus: GameStatus) {
+			if (gameStatus === GameStatus.Finished) {
+				window.clearInterval(this.gameInterval);
+
+				if (this.gameResult === GameResult.Won) {
+					console.log("YOU WON!");
+				} else {
+					console.log("YOU LOST :(");
+				}
+			}
+		}
+
+		private initializeKeyListeners() {
+			window.addEventListener("keydown", (e) => {
+				if (e.keyCode >= 65 && e.keyCode <= 90) {
+					this.userInput += e.key;
+					console.log(this.userInput);
+					this.checkIfKeyword();
+				}
+
+				if (e.keyCode === 8) {
+					this.userInput = this.userInput.substring(0, this.userInput.length - 1);
+					console.log(this.userInput);
+				}
+			});
+		}
+
+		private checkIfKeyword() {
+			if (this.userInput === this.keyword) {
+				this.gameStatus = GameStatus.Finished;
+				this.gameResult = GameResult.Won;
+			}
+		}
+
+		private moveActiveShape(dir: Direction) {
+			if (this.isColliding(dir)) {
+				return false;
+			}
+
+			this.shapeVector = ShapeBody.appliedVector(dir, this.shapeVector);
+			this.updateActiveShapeBody(dir);
+			return true;
+		}
 
 		private updateActiveShapeBody(direction: Direction) {
 			const shapeBodyCoords = this.activeShapeBody.coordinates;
@@ -158,5 +191,9 @@
 		grid-auto-rows: 34px;
 		grid-auto-columns: 34px;
 		background-color: #395a65;
+
+		.user-input {
+			position: absolute;
+		}
 	}
 </style>

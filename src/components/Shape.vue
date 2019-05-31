@@ -7,6 +7,9 @@
 				class="coord"
 		>
 		</div>
+		<span class="keyword">
+			<span v-for="letter in keywordArray">{{ letter }}</span>
+		</span>
 	</div>
 </template>
 
@@ -19,6 +22,9 @@
 	export default class Shape extends Vue {
 		@Prop() private type!: boolean[];
 		@Prop() private coords!: Vector;
+		@Prop() private keyword!: string;
+		@Prop() private userInput!: string;
+
 		private id: string = uuidv4();
 
 		public created() {
@@ -46,6 +52,12 @@
 			const { x, y } = this.coords;
 			return { gridColumnStart: x + 1, gridRowStart: y + 1 };
 		}
+
+		get keywordArray() {
+			if (this.keyword) {
+				return this.keyword.split("");
+			}
+		}
 	}
 </script>
 
@@ -57,9 +69,19 @@
 		grid-template-columns: repeat(3, 1fr);
 		grid-template-rows: repeat(3, 1fr);
 		grid-template-areas: "s0 s1 s2" "s3 s4 s5" "s6 s7 s8";
+		position: relative;
 
 		.coord {
 			background-color: #f1ec23;
+		}
+
+		.keyword {
+			position: absolute;
+			margin: 0 auto;
+			left: 0;
+			right: 0;
+			top: 7px;
+			text-transform: uppercase;
 		}
 	}
 </style>
