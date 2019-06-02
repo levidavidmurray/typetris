@@ -32,6 +32,7 @@ export enum GameStatus {
 export enum GameResult {
 	Won = "Won",
 	Lost = "Lost",
+	Undecided = "Undecided"
 }
 
 export interface GameShape {
@@ -51,7 +52,7 @@ export interface ShapeType {
 export enum GameSpeed {
 	Slow = 300,
 	Regular = 150,
-	Fast = 30,
+	Fast = 10,
 }
 
 interface StringObject {
@@ -59,9 +60,9 @@ interface StringObject {
 }
 
 export const ShapeColor: StringObject = {
-	I: "#19b2e2", // Blue
-	O: "#e62e0e", // Red
-	T: "#32d876", // Green
-	L: "#e8bd18", // Yellow
-	Z: "#f189c6", // Pink
+	I: "#5a828e", // Blue
+	O: "#9e3220", // Red
+	T: "#79a089", // Green
+	L: "#af973d", // Yellow
+	Z: "#b56f98", // Pink
 };

@@ -1,11 +1,21 @@
 <template>
 	<div class="home" :style="gridTemplate">
+		<div class="overlay">
+			<div class="top-left"></div>
+			<div class="top-right"></div>
+			<div class="bottom-left"></div>
+			<div class="bottom-right"></div>
+		</div>
 		<div class="game-over" v-if="gameOver">
 			<div class="message" v-if="gameLost">YOU LOST</div>
 			<div class="message" v-else>YOU WON</div>
 			<p class="sub-message">Press [ENTER] to play again</p>
 		</div>
-		<div class="user-input">{{ userInput }}</div>
+		<div class="user-input">
+			<span class="left">></span>
+			<span class="input">{{ userInput }}</span>
+			<span class="cursor">_</span>
+		</div>
 		<Shape
 				v-for="activeShape in activeGameShapes"
 				v-if="(gameStarted || isPaused || gameOver)"
@@ -13,6 +23,7 @@
 				:key="activeShape.id"
 				:game-shape="activeShape"
 				:user-input="userInput"
+				:game-status="gameStatus"
 		/>
 		<Shape
 				v-for="shape in staticGameShapes"
@@ -20,19 +31,19 @@
 				:key="shape.id"
 				:game-shape="shape"
 				:user-input="userInput"
+				:game-status="gameStatus"
 		/>
 	</div>
 </template>
 
 <script lang="ts">
 	import {Component, Vue, Watch} from "vue-property-decorator";
-	import {Direction, GameResult, GameShape, GameSpeed, GameStatus, ShapeType, Vector} from "@/types";
+	import {Direction, GameResult, GameShape, GameSpeed, GameStatus, Vector} from "@/types";
 	import {ShapeBody} from "@/lib/ShapeBody";
 	import Shape from "@/components/Shape.vue";
 	import shapes from "@/shapes";
 	import uuidv4 from "uuid/v4";
 	import WORD_STORE from "../words";
-	import shapeTypes from "@/shapes";
 
 	const GAME_WIDTH: number = 20;
 	const GAME_HEIGHT: number = Math.ceil(GAME_WIDTH * 1.25);
@@ -46,12 +57,13 @@
 
 		private gameCoordinates: boolean[][] = [];
 		private shapeToEnd: GameShape | null = null;
+		private shapeQueued: boolean = false;
 
 		private userInput: string = "";
 
 		private gameInterval!: number;
 		private gameStatus: GameStatus = GameStatus.Waiting;
-		private gameResult: GameResult = GameResult.Lost;
+		private gameResult: GameResult = GameResult.Undecided;
 
 		public created() {
 			this.resetGameCoordinates();
@@ -72,6 +84,17 @@
 				this.gameInterval = window.setInterval(() => {
 
 					if (!this.isPaused && !this.gameOver) {
+						if (this.activeGameShapes.length === 0) {
+							if (!this.shapeQueued) {
+								setTimeout(() => {
+									this.generateGameShape();
+									this.shapeQueued = false;
+								}, 300);
+							}
+
+							this.shapeQueued = true;
+						}
+
 						this.activeGameShapes.forEach((activeShape: GameShape) => {
 							if (!this.moveShape(activeShape, Direction.Down)) {
 								if (activeShape.position.y <= 0) {
@@ -91,14 +114,6 @@
 
 									return gameShape.id !== activeShape.id;
 								});
-
-								if (this.activeGameShapes.length === 0) {
-									setTimeout(() => {
-										if (this.activeGameShapes.length === 0) {
-											this.generateGameShape();
-										}
-									}, 300);
-								}
 							}
 						});
 					}
@@ -136,6 +151,12 @@
 
 		private initializeKeyListeners() {
 			window.addEventListener("keydown", (e) => {
+				// Kill game interval
+				if (e.ctrlKey && e.code === "KeyK") {
+					e.preventDefault();
+					window.clearInterval(this.gameInterval);
+				}
+
 				if (e.keyCode === 27) {
 					return this.gameStatus = this.isPaused ? GameStatus.InProgress : GameStatus.Paused;
 				}
@@ -167,10 +188,6 @@
 								this.destroyGameShape(gameShape);
 							}
 						});
-
-						if (this.activeGameShapes.length === 0) {
-							this.generateGameShape();
-						}
 					}
 				}
 			});
@@ -315,6 +332,8 @@
 		private resetGame() {
 			window.clearInterval(this.gameInterval);
 			this.userInput = "";
+			this.gameResult = GameResult.Undecided;
+			this.gameStatus = GameStatus.Waiting;
 			this.activeGameShapes = [];
 			this.staticGameShapes = [];
 			this.resetGameCoordinates();
@@ -358,29 +377,95 @@
 </script>
 
 <style lang="scss">
+	@keyframes flash {
+		0% { opacity: 1; }
+		50% { opacity: 1; }
+		50.1% { opacity: 0; }
+		100% { opacity: 0; }
+	}
+
 	.home {
 		position: relative;
 		display: grid;
+		margin: 0 auto;
 		width: 641px;
 		height: 854px;
 		grid-template-columns: repeat(15, 1fr);
 		grid-template-rows: repeat(15, 1fr);
 		grid-auto-rows: 34px;
 		grid-auto-columns: 34px;
-		background-color: #504054;
+		background: lightgrey;
+		background: radial-gradient(circle, #2d6b29 0%, #243834 100%);
+		box-shadow: 0 0 17px -5px black;
+		overflow: hidden;
+
+		.overlay {
+			position: absolute;
+			overflow: hidden;
+			width: 100%;
+			height: 100%;
+			z-index: 99;
+
+			& > * {
+				width: 300px;
+				height: 300px;
+				border-radius: 50%;
+				position: absolute;
+				box-shadow: 0 0 120px 70px #2d2a2a;
+
+				&.top-left {
+					top: -300px;
+					left: -200px;
+				}
+
+				&.top-right {
+					top: -300px;
+					right: -200px;
+				}
+
+				&.bottom-left {
+					bottom: -300px;
+					left: -200px;
+				}
+
+				&.bottom-right {
+					bottom: -300px;
+					right: -200px;
+				}
+			}
+		}
 
 		.user-input {
-			grid-column-start: 1;
-			grid-row-start: 1;
-			grid-column-end: span 4;
+			position: absolute;
+			top: 25px;
+			z-index: 9;
+			left: 15px;
 			color: white;
 			font-weight: bold;
 			display: flex;
+			align-items: center;
 			padding-left: 5px;
 			padding-top: 5px;
 			letter-spacing: 2px;
-			text-transform: uppercase;
+			text-transform: lowercase;
 			text-shadow: 0 0 3px white;
+
+			.cursor {
+				animation: flash 1s infinite;
+				position: relative;
+				top: -1px;
+			}
+
+			.input {
+				font-size: 13px;
+			}
+
+			.left {
+				margin-right: 3px;
+				font-size: 1.3em;
+				position: relative;
+				top: -2px;
+			}
 		}
 
 		.game-over {
@@ -400,6 +485,10 @@
 
 			.message {
 				font-size: 60px;
+			}
+
+			.sub-message {
+				animation: flash 1.5s infinite;
 			}
 		}
 	}

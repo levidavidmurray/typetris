@@ -1,11 +1,11 @@
 <template>
-	<div class="shape" :style="positionStyle">
+	<div class="shape" :style="positionStyle" :class="{isSuper}">
 		<div
 				v-for="(coord, index) in type"
 				v-if="coord"
 				:style="{gridArea: 's'+index, backgroundColor: shapeColor}"
 				class="coord"
-				:class="{isSuper: isSuper}"
+				:class="{animate: isSuper && !gameIsOver}"
 		>
 		</div>
 		<span class="keyword" :class="keywordClass">
@@ -18,13 +18,14 @@
 </template>
 
 <script lang="ts">
-	import {Component, Vue, Prop} from "vue-property-decorator";
-	import { GameShape, ShapeColor } from "@/types";
+	import {Component, Prop, Vue} from "vue-property-decorator";
+	import {GameShape, GameStatus, ShapeColor} from "@/types";
 
 	@Component
 	export default class Shape extends Vue {
 		@Prop() private gameShape!: GameShape;
 		@Prop() private userInput!: string;
+		@Prop() private gameStatus!: GameStatus;
 
 		public created() {
 			this.$emit("shape-enter", this.gameShape.worldCoords);
@@ -60,7 +61,15 @@
 			return this.gameShape.isSuper;
 		}
 
+		get gameIsOver() {
+			return this.gameStatus === GameStatus.Finished;
+		}
+
 		get shapeColor() {
+			return "transparent";
+			if (this.isSuper) {
+				return "transparent";
+			}
 			const shapeName: string = this.gameShape.shapeName;
 			return ShapeColor[shapeName];
 		}
@@ -90,17 +99,35 @@
 </script>
 
 <style scoped lang="scss">
-	@keyframes superAnimation {
+	@keyframes superFlash {
 		0% {
-			background-color: white;
+			background-color: rgba(255,255,255,0);
 		}
 
 		50% {
-			background-color: #2d2a2a;
+			background-color: rgba(255,255,255,0);
 		}
 
 		100% {
-			background-color: white;
+			background-color: rgba(255,255,255,0);
+		}
+	}
+
+	@keyframes superText {
+		0% {
+			color: #a2ffaf;
+		}
+
+		50% {
+			color: rgba(255,255,255,0);
+		}
+
+		80% {
+			color: rgba(255,255,255,0);
+		}
+
+		100% {
+			color: #a2ffaf;
 		}
 	}
 
@@ -113,19 +140,31 @@
 		grid-template-areas: "s0 s1 s2" "s3 s4 s5" "s6 s7 s8";
 		position: relative;
 
+		&.isSuper {
+			.coord {
+				background-color: rgba(255,255,255,0);
+				box-shadow: 0 0 4px #8aff9b;
+				color: white !important;
+
+				&.animate {
+					/*animation: superFlash 0.7s infinite;*/
+				}
+			}
+
+			.keyword {
+				animation: superText 1s infinite;
+			}
+		}
+
 		.coord {
 			background-color: #e24919;
-			box-shadow: 0 0 4px black;
-
-			&.isSuper {
-				animation: superAnimation 0.7s infinite;
-			}
+			box-shadow: 0 0 4px #a8ff9a;
 		}
 
 		.keyword {
 			text-transform: uppercase;
 			font-weight: bold;
-			color: #2d2a2a;
+			color: #a8ff9a;
 			display: flex;
 
 			font-size: 80%;
