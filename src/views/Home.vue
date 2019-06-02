@@ -8,7 +8,7 @@
 		<div class="user-input">{{ userInput }}</div>
 		<Shape
 				v-for="activeShape in activeGameShapes"
-				v-if="(gameStarted || isPaused)"
+				v-if="(gameStarted || isPaused || gameOver)"
 				@shape-enter="() => setGameCoordinates(true, activeShape.worldCoords)"
 				:key="activeShape.id"
 				:game-shape="activeShape"
@@ -16,7 +16,7 @@
 		/>
 		<Shape
 				v-for="shape in staticGameShapes"
-				v-if="(gameStarted || isPaused)"
+				v-if="(gameStarted || isPaused || gameOver)"
 				:key="shape.id"
 				:game-shape="shape"
 				:user-input="userInput"
@@ -31,11 +31,11 @@
 	import Shape from "@/components/Shape.vue";
 	import shapes from "@/shapes";
 	import uuidv4 from "uuid/v4";
+	import WORD_STORE from "../words";
 	import shapeTypes from "@/shapes";
 
-	const WORD_STORE = ["plane", "vagabond", "eggnog", "hobbies", "solicit", "satisfy"];
-	const GAME_WIDTH: number = 30;
-	const GAME_HEIGHT: number = Math.ceil(GAME_WIDTH * 0.75);
+	const GAME_WIDTH: number = 20;
+	const GAME_HEIGHT: number = Math.ceil(GAME_WIDTH * 1.25);
 	const GAME_SPEED: number = GameSpeed.Fast;
 	const GAME_SIZE: number = GAME_WIDTH * GAME_HEIGHT;
 
@@ -45,6 +45,7 @@
 		public staticGameShapes: GameShape[] = [];
 
 		private gameCoordinates: boolean[][] = [];
+		private shapeToEnd: GameShape | null = null;
 
 		private userInput: string = "";
 
@@ -55,6 +56,7 @@
 		public created() {
 			this.resetGameCoordinates();
 			this.generateGameShape();
+			this.initializeKeyListeners();
 		}
 
 		public mounted() {
@@ -67,16 +69,19 @@
 			}, 400);
 
 			setTimeout(() => {
-				this.initializeKeyListeners();
 				this.gameInterval = window.setInterval(() => {
 
 					if (!this.isPaused && !this.gameOver) {
 						this.activeGameShapes.forEach((activeShape: GameShape) => {
 							if (!this.moveShape(activeShape, Direction.Down)) {
-								if (activeShape.position.y <= 1) {
-									console.log("YOU LOST :(");
-									this.gameResult = GameResult.Lost;
-									this.gameStatus = GameStatus.Finished;
+								if (activeShape.position.y <= 0) {
+									if (!this.shapeToEnd) {
+										this.shapeToEnd = activeShape;
+									} else {
+										if (this.shapeToEnd.position.y <= 0) {
+											return this.endGame();
+										}
+									}
 								}
 
 								this.activeGameShapes = this.activeGameShapes.filter((gameShape: GameShape) => {
@@ -88,7 +93,11 @@
 								});
 
 								if (this.activeGameShapes.length === 0) {
-									this.generateGameShape();
+									setTimeout(() => {
+										if (this.activeGameShapes.length === 0) {
+											this.generateGameShape();
+										}
+									}, 300);
 								}
 							}
 						});
@@ -110,7 +119,6 @@
 		@Watch("gameStatus")
 		private onGameStatusChanged(gameStatus: GameStatus) {
 			if (gameStatus === GameStatus.Finished) {
-				window.clearInterval(this.gameInterval);
 
 				if (this.gameResult === GameResult.Lost) {
 					console.log("YOU LOST :(");
@@ -118,6 +126,12 @@
 					console.log("Game ended!");
 				}
 			}
+		}
+
+		private endGame() {
+			console.log("YOU LOST :(");
+			this.gameResult = GameResult.Lost;
+			this.gameStatus = GameStatus.Finished;
 		}
 
 		private initializeKeyListeners() {
@@ -147,7 +161,11 @@
 					this.userInput = "";
 					if (WORD_STORE.includes(testInput)) {
 						this.shapesWithKeyword(testInput).forEach((gameShape: GameShape) => {
-							this.destroyGameShape(gameShape);
+							if (gameShape.isSuper) {
+								this.clearBoard();
+							} else {
+								this.destroyGameShape(gameShape);
+							}
 						});
 
 						if (this.activeGameShapes.length === 0) {
@@ -195,12 +213,30 @@
 			this.staticGameShapes = [];
 		}
 
+		private clearBoard() {
+			this.activeGameShapes = [];
+			this.staticGameShapes = [];
+			this.resetGameCoordinates();
+		}
+
 		private generateGameShape() {
+			let isSuper = false;
+			let superChance = 0.01;
+
+			this.gameCoordinates.forEach((xCoord) => {
+				if (xCoord[8]) {
+					superChance = 0.3;
+				}
+			});
+
+			if (Math.random() <= superChance) {
+				isSuper = true;
+			}
+
 			const randIndex: number = ShapeBody.getRandomInt(Object.keys(shapes).length);
 			const shapeName: string = Object.keys(shapes)[randIndex];
 
 			const position: Vector = {x: ShapeBody.getRandomInt(GAME_WIDTH - 3), y: 0};
-			// const position: Vector = {x: 5, y: 0};
 
 			this.activeGameShapes.push({
 				id: uuidv4(),
@@ -209,6 +245,7 @@
 				position,
 				keyword: WORD_STORE[ShapeBody.getRandomInt(WORD_STORE.length)],
 				worldCoords: ShapeBody.shapeConstruct(shapes[shapeName], position),
+				isSuper,
 			});
 		}
 
@@ -276,6 +313,8 @@
 		}
 
 		private resetGame() {
+			window.clearInterval(this.gameInterval);
+			this.userInput = "";
 			this.activeGameShapes = [];
 			this.staticGameShapes = [];
 			this.resetGameCoordinates();
@@ -322,13 +361,13 @@
 	.home {
 		position: relative;
 		display: grid;
-		width: 1024px;
-		height: 768px;
+		width: 641px;
+		height: 854px;
 		grid-template-columns: repeat(15, 1fr);
 		grid-template-rows: repeat(15, 1fr);
 		grid-auto-rows: 34px;
 		grid-auto-columns: 34px;
-		background-color: #395a65;
+		background-color: #504054;
 
 		.user-input {
 			grid-column-start: 1;
@@ -336,6 +375,12 @@
 			grid-column-end: span 4;
 			color: white;
 			font-weight: bold;
+			display: flex;
+			padding-left: 5px;
+			padding-top: 5px;
+			letter-spacing: 2px;
+			text-transform: uppercase;
+			text-shadow: 0 0 3px white;
 		}
 
 		.game-over {
@@ -344,7 +389,8 @@
 			margin: auto;
 			width: 65%;
 			height: 300px;
-			background-color: rgba(0,0,0,0.5);
+			background-color: rgba(0,0,0,0.9);
+			box-shadow: 0 0 6px 16px rgba(0, 0, 0, 0.9);
 			color: white;
 			z-index: 5;
 			display: flex;

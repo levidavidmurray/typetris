@@ -41,6 +41,7 @@ export interface GameShape {
 	position: Vector;
 	keyword: string;
 	worldCoords: Vector[];
+	isSuper: boolean;
 }
 
 export interface ShapeType {
@@ -50,7 +51,7 @@ export interface ShapeType {
 export enum GameSpeed {
 	Slow = 300,
 	Regular = 150,
-	Fast = 75,
+	Fast = 30,
 }
 
 interface StringObject {

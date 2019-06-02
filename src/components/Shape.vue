@@ -5,9 +5,10 @@
 				v-if="coord"
 				:style="{gridArea: 's'+index, backgroundColor: shapeColor}"
 				class="coord"
+				:class="{isSuper: isSuper}"
 		>
 		</div>
-		<span class="keyword">
+		<span class="keyword" :class="keywordClass">
 			<span
 					v-for="(letter, index) in keywordArray"
 					:class="isLetterActive(letter, index)"
@@ -30,7 +31,11 @@
 		}
 
 		public isLetterActive(letter: string, index: number) {
-			if (this.userInput[index] === letter) {
+			if (this.userInput.includes(this.keyword) && this.userInput.length > this.keyword.length) {
+				return "error";
+			}
+
+			if (this.keyword.includes(this.userInput) && this.userInput[index] === letter) {
 				return "active";
 			}
 		}
@@ -51,6 +56,10 @@
 			return this.gameShape.keyword.toLowerCase();
 		}
 
+		get isSuper() {
+			return this.gameShape.isSuper;
+		}
+
 		get shapeColor() {
 			const shapeName: string = this.gameShape.shapeName;
 			return ShapeColor[shapeName];
@@ -66,10 +75,35 @@
 				return this.keyword.split("");
 			}
 		}
+
+		get keywordClass() {
+			switch (this.gameShape.shapeName) {
+				case "O":
+					return "shape-O";
+				case "T":
+					return "top-3";
+				default:
+					return "center-3";
+			}
+		}
 	}
 </script>
 
 <style scoped lang="scss">
+	@keyframes superAnimation {
+		0% {
+			background-color: white;
+		}
+
+		50% {
+			background-color: #2d2a2a;
+		}
+
+		100% {
+			background-color: white;
+		}
+	}
+
 	.shape {
 		display: grid;
 		grid-row-end: span 3;
@@ -81,20 +115,51 @@
 
 		.coord {
 			background-color: #e24919;
+			box-shadow: 0 0 4px black;
+
+			&.isSuper {
+				animation: superAnimation 0.7s infinite;
+			}
 		}
 
 		.keyword {
-			position: absolute;
-			margin: 0 auto;
-			left: 0;
-			right: 0;
-			top: 7px;
 			text-transform: uppercase;
 			font-weight: bold;
 			color: #2d2a2a;
+			display: flex;
+
+			font-size: 80%;
+			justify-content: center;
+			align-items: center;
+
+			&.center-3 {
+				flex-direction: column;
+				grid-row-start: 1;
+				grid-column-start: 2;
+				grid-row-end: span 3;
+				grid-column-end: 2;
+			}
+
+			&.top-3 {
+				grid-row-start: 1;
+				grid-row-end: 1;
+				grid-column-start: 1;
+				grid-column-end: span 3;
+			}
+
+			&.shape-O {
+				grid-row: 2 / span 3;
+				grid-column: 1 / span 2;
+			}
 
 			.active {
-				color: #e8e515;
+				color: #fff446;
+				text-shadow: 0 0 5px white;
+			}
+
+			.error {
+				color: #ff0000;
+				text-shadow: 1px 1px 2px #7D3621;
 			}
 		}
 	}
