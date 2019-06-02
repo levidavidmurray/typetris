@@ -3,7 +3,7 @@
 		<div
 				v-for="(coord, index) in type"
 				v-if="coord"
-				:style="{gridArea: 's'+index}"
+				:style="{gridArea: 's'+index, backgroundColor: shapeColor}"
 				class="coord"
 		>
 		</div>
@@ -18,9 +18,7 @@
 
 <script lang="ts">
 	import {Component, Vue, Prop} from "vue-property-decorator";
-	import {ShapeElement, Vector, GameShape} from "@/types";
-	import uuidv4 from "uuid";
-	import {ShapeBody} from "@/lib/ShapeBody";
+	import { GameShape, ShapeColor } from "@/types";
 
 	@Component
 	export default class Shape extends Vue {
@@ -28,9 +26,7 @@
 		@Prop() private userInput!: string;
 
 		public created() {
-			const worldCoords: number[][] = ShapeBody.shapeConstruct(this.type, this.coords);
-
-			this.$emit("shape-enter", {id: this.id, worldCoords});
+			this.$emit("shape-enter", this.gameShape.worldCoords);
 		}
 
 		public isLetterActive(letter: string, index: number) {
@@ -48,11 +44,16 @@
 		}
 
 		get coords() {
-			return this.gameShape.coordinates;
+			return this.gameShape.position;
 		}
 
 		get keyword() {
 			return this.gameShape.keyword.toLowerCase();
+		}
+
+		get shapeColor() {
+			const shapeName: string = this.gameShape.shapeName;
+			return ShapeColor[shapeName];
 		}
 
 		get positionStyle() {

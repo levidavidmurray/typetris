@@ -7,39 +7,41 @@ export class ShapeBody {
 	 * @param coords
 	 */
 	public static appliedVector(dir: Direction, coords: Vector) {
+		const deltaVector: Vector = {...coords};
+
 		switch (dir) {
 			case Direction.Up:
-				coords.y--;
+				deltaVector.y--;
 				break;
 			case Direction.Down:
-				coords.y++;
+				deltaVector.y++;
 				break;
 			case Direction.Left:
-				coords.x--;
+				deltaVector.x--;
 				break;
 			case Direction.Right:
-				coords.x++;
+				deltaVector.x++;
 				break;
 		}
 
-		return coords;
+		return deltaVector;
 	}
 
 	public static validCoords(coords: Vector, maxWidth: number, maxHeight: number) {
 		return (coords.x >= 0) && (coords.x < maxWidth) && (coords.y >= 0) && (coords.y < maxHeight);
 	}
 
-	public static shapeConstruct(shapeType: boolean[], origin: Vector) {
-		const shapeCoords: number[][] = [];
-		
-		shapeType.forEach((coordBool, index) => {
-			if (coordBool) {
-				if (index < 3) {
-					shapeCoords.push([origin.x + index, origin.y]);
-				} else if (index >= 3 && index < 6) {
-					shapeCoords.push([origin.x + index - 3, origin.y + 1]);
+	public static shapeConstruct(shapeType: boolean[], origin: Vector): Vector[] {
+		const shapeCoords: Vector[] = [];
+		const {x, y} = origin;
+		shapeType.forEach((shapeVector, i) => {
+			if (shapeVector) {
+				if (i < 3) {
+					shapeCoords.push({x: x + i, y});
+				} else if (i >= 3 && i < 6) {
+					shapeCoords.push({x: x + i - 3, y: y + 1});
 				} else {
-					shapeCoords.push([origin.x + index - 6, origin.y + 2]);
+					shapeCoords.push({x: x + i - 6, y: y + 2});
 				}
 			}
 		});

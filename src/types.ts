@@ -37,11 +37,30 @@ export enum GameResult {
 export interface GameShape {
 	id: string;
 	type: boolean[];
-	coordinates: Vector;
+	shapeName: string;
+	position: Vector;
 	keyword: string;
-	worldCoords?: number[][];
+	worldCoords: Vector[];
 }
 
 export interface ShapeType {
 	[key: string]: boolean[];
 }
+
+export enum GameSpeed {
+	Slow = 300,
+	Regular = 150,
+	Fast = 75,
+}
+
+interface StringObject {
+	[key: string]: string;
+}
+
+export const ShapeColor: StringObject = {
+	I: "#19b2e2", // Blue
+	O: "#e62e0e", // Red
+	T: "#32d876", // Green
+	L: "#e8bd18", // Yellow
+	Z: "#f189c6", // Pink
+};
