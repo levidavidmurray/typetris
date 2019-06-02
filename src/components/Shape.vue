@@ -66,7 +66,7 @@
 		}
 
 		get shapeColor() {
-			return "transparent";
+			return "#a8ff9a";
 			if (this.isSuper) {
 				return "transparent";
 			}
@@ -115,7 +115,7 @@
 
 	@keyframes superText {
 		0% {
-			color: #a2ffaf;
+			color: #545454;
 		}
 
 		50% {
@@ -127,7 +127,7 @@
 		}
 
 		100% {
-			color: #a2ffaf;
+			color: #545454;
 		}
 	}
 
@@ -157,14 +157,14 @@
 		}
 
 		.coord {
-			background-color: #e24919;
+			background-color: #a8ff9a;
 			box-shadow: 0 0 4px #a8ff9a;
 		}
 
 		.keyword {
 			text-transform: uppercase;
 			font-weight: bold;
-			color: #a8ff9a;
+			color: #367736;
 			display: flex;
 
 			font-size: 80%;
@@ -192,8 +192,8 @@
 			}
 
 			.active {
-				color: #fff446;
-				text-shadow: 0 0 5px white;
+				color: white;
+				text-shadow: 0 0 5px black;
 			}
 
 			.error {

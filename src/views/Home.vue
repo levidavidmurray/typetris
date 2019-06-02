@@ -1,10 +1,16 @@
 <template>
 	<div class="home" :style="gridTemplate">
 		<div class="overlay">
-			<div class="top-left"></div>
-			<div class="top-right"></div>
-			<div class="bottom-left"></div>
-			<div class="bottom-right"></div>
+			<div class="lines" :style="lineGridTemplate">
+				<div
+						v-for="line in lineHolder"
+						class="line"
+				></div>
+			</div>
+			<div class="corner top-left"></div>
+			<div class="corner top-right"></div>
+			<div class="corner bottom-left"></div>
+			<div class="corner bottom-right"></div>
 		</div>
 		<div class="game-over" v-if="gameOver">
 			<div class="message" v-if="gameLost">YOU LOST</div>
@@ -52,6 +58,7 @@
 
 	@Component({components: {Shape}})
 	export default class Home extends Vue {
+		public lineHolder: number[] = [];
 		public activeGameShapes: GameShape[] = [];
 		public staticGameShapes: GameShape[] = [];
 
@@ -66,6 +73,10 @@
 		private gameResult: GameResult = GameResult.Undecided;
 
 		public created() {
+			for (let i = 0; i < GAME_HEIGHT*3; i++) {
+				this.lineHolder.push(i);
+			}
+
 			this.resetGameCoordinates();
 			this.generateGameShape();
 			this.initializeKeyListeners();
@@ -373,6 +384,10 @@
 		get gridTemplate() {
 			return {gridTemplateColumns: `repeat(${GAME_WIDTH}, 1fr)`, gridTemplateRows: `repeat(${GAME_HEIGHT}, 1fr)`};
 		}
+
+		get lineGridTemplate() {
+			return {gridTemplateColumns: '1fr', gridTemplateRows: `repeat(${GAME_HEIGHT*3}, 1fr)`};
+		}
 	}
 </script>
 
@@ -396,7 +411,7 @@
 		grid-auto-columns: 34px;
 		background: lightgrey;
 		background: radial-gradient(circle, #2d6b29 0%, #243834 100%);
-		box-shadow: 0 0 17px -5px black;
+		box-shadow: 0 0 28px -14px black;
 		overflow: hidden;
 
 		.overlay {
@@ -406,7 +421,17 @@
 			height: 100%;
 			z-index: 99;
 
-			& > * {
+			.lines {
+				height: 100%;
+				width: 100%;
+				display: grid;
+
+				.line {
+					border-bottom: 1px solid #4c6b472e;
+				}
+			}
+
+			.corner {
 				width: 300px;
 				height: 300px;
 				border-radius: 50%;
