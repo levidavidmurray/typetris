@@ -3,7 +3,7 @@
 		<div
 				v-for="(coord, index) in type"
 				v-if="coord"
-				:style="{gridArea: 's'+index, backgroundColor: shapeColor}"
+				:style="{gridArea: `s${index}`, backgroundColor: shapeColor}"
 				class="coord"
 				:class="{animate: isSuper && !gameIsOver}"
 		>
@@ -19,7 +19,7 @@
 
 <script lang="ts">
 	import {Component, Prop, Vue} from "vue-property-decorator";
-	import {GameShape, GameStatus, ShapeColor} from "@/types";
+	import {GameShape, GameStatus, ShapeColor, ShapeType} from "@/types";
 
 	@Component
 	export default class Shape extends Vue {
@@ -66,12 +66,23 @@
 		}
 
 		get shapeColor() {
-			return "rgba(91, 173, 78, 0.6)";
-			if (this.isSuper) {
-				return "transparent";
+			// return ShapeColor[this.gameShape.shapeName];
+			return "";
+		}
+
+		public shapeStyle(index: number) {
+			switch (this.gameShape.shapeName) {
+				case "I":
+					return [{
+						gridArea: "s1",
+						height: "300%",
+					}];
+
 			}
-			const shapeName: string = this.gameShape.shapeName;
-			return ShapeColor[shapeName];
+
+			return {
+				gridArea: `s${index}`
+			}
 		}
 
 		get positionStyle() {
@@ -115,14 +126,14 @@
 
 	@keyframes superText {
 		0% {
-			color: #a8ff9a;
+			color: white;
 		}
 
-		50% {
-			color: #a8ff9a;
+		35% {
+			color: white;
 		}
 
-		50.1% {
+		35.1% {
 			color: rgba(255,255,255,0);
 		}
 
@@ -142,22 +153,22 @@
 
 		&.isSuper {
 			.coord {
-				background-color: rgba(255,255,255,0);
-				box-shadow: 0 0 4px #8aff9b;
-				color: white !important;
-
-				&.animate {
-					/*animation: superFlash 0.7s infinite;*/
-				}
+				box-shadow: 0 0 4px rgba(255, 255, 255, 0.55);
+				background-color: rgba(255, 255, 255, 0.23);
 			}
 
 			.keyword {
-				animation: superText 1s infinite;
+				animation: superText 2s infinite;
+
+				.active {
+					color: #a8ff9a;
+					text-shadow: 0 0 5px #a8ff9a;
+				}
 			}
 		}
 
 		.coord {
-			background-color: #a8ff9a;
+			background-color: rgba(91, 173, 78, 0.6);
 			box-shadow: 0 0 4px #a8ff9a;
 		}
 
@@ -166,6 +177,7 @@
 			font-weight: bold;
 			color: #a8ff9a;
 			display: flex;
+			position: relative;
 
 			font-size: 80%;
 			justify-content: center;
@@ -193,7 +205,7 @@
 
 			.active {
 				color: white;
-				text-shadow: 0 0 5px black;
+				text-shadow: 0 0 5px white;
 			}
 
 			.error {

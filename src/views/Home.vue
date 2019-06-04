@@ -15,14 +15,24 @@
 				<div class="corner bottom-right"></div>
 			</div>
 			<div class="game-over" v-if="gameOver">
-				<div class="message" v-if="gameLost">YOU LOST</div>
-				<div class="message" v-else>YOU WON</div>
-				<p class="sub-message">Press [ENTER] to play again</p>
+				<div class="message">YOUR SCORE</div>
+				<span>{{ userScore }}</span>
+				<p class="sub-message">Press <strong>[ENTER]</strong> to play again</p>
 			</div>
-			<div class="user-input">
-				<span class="left">></span>
-				<span class="input">{{ userInput }}</span>
-				<span class="cursor">_</span>
+			<div class="game-over" v-if="!gameOver && !gameStarted">
+				<div class="message" style="font-size: 50px;">Typetris</div>
+				<p class="sub-message" style="margin-top: 40px;">Press <strong>[ENTER]</strong> to play</p>
+			</div>
+			<div class="game-bar">
+				<div class="user-input">
+					<span class="left">></span>
+					<span class="input">{{ userInput }}</span>
+					<span class="cursor">_</span>
+				</div>
+				<div class="score">
+					<span class="label">Score:</span>
+					<span class="number">{{ userScore }}</span>
+				</div>
 			</div>
 			<Shape
 					v-for="activeShape in activeGameShapes"
@@ -47,7 +57,7 @@
 
 <script lang="ts">
 	import {Component, Vue, Watch} from "vue-property-decorator";
-	import {Direction, GameResult, GameShape, GameSpeed, GameStatus, Vector} from "@/types";
+	import {Direction, GameResult, GameShape, GameSpeed, GameStatus, Vector, LetterShapeMap} from "@/types";
 	import {ShapeBody} from "@/lib/ShapeBody";
 	import Shape from "@/components/Shape.vue";
 	import shapes from "@/shapes";
@@ -66,6 +76,16 @@
 	const GAME_SPEED: number = GameSpeed.Fast;
 	const GAME_SIZE: number = GAME_WIDTH * GAME_HEIGHT;
 
+	let	fps				 = 		60,
+		interval     =    1000/fps,
+		shapeTimeOut =    600,
+		lastTime     =    (new Date()).getTime(),
+		lastShape		 = 		(new Date()).getTime(),
+		gameFinishTime = 0,
+		currentTime  =    0,
+		delta = 0;
+
+
 	@Component({components: {Shape}})
 	export default class Home extends Vue {
 		public lineHolder: number[] = [];
@@ -73,10 +93,18 @@
 		public staticGameShapes: GameShape[] = [];
 
 		private gameCoordinates: boolean[][] = [];
-		private shapeToEnd: GameShape | null = null;
-		private shapeQueued: boolean = false;
+
+		private letterShapeMap: LetterShapeMap = {
+			I: [],
+			T: [],
+			O: [],
+			L: [],
+			Z: [],
+		};
 
 		private userInput: string = "";
+		private userScore: number = 0;
+		private gameFinish: boolean = false;
 
 		private gameInterval!: number;
 		private gameStatus: GameStatus = GameStatus.Waiting;
@@ -88,58 +116,50 @@
 			}
 
 			this.resetGameCoordinates();
-			this.generateGameShape();
 			this.initializeKeyListeners();
 		}
 
 		public mounted() {
-			this.startGame();
+			this.update();
 		}
 
 		private startGame() {
-			setTimeout(() => {
-				this.gameStatus = GameStatus.InProgress;
-			}, 400);
+			this.resetGame();
+		}
 
-			setTimeout(() => {
-				this.gameInterval = window.setInterval(() => {
+		private update() {
+			requestAnimationFrame(this.update.bind(this));
 
-					if (!this.isPaused && !this.gameOver) {
-						if (this.activeGameShapes.length === 0) {
-							if (!this.shapeQueued) {
-								setTimeout(() => {
-									this.generateGameShape();
-									this.shapeQueued = false;
-								}, 300);
+			currentTime = (new Date()).getTime();
+			delta = (currentTime-lastTime);
+			let deltaS = (currentTime-lastShape);
+
+			if (delta > interval) {
+				if (!this.isPaused && !this.gameFinish && this.gameStarted) {
+					if (deltaS > shapeTimeOut) {
+						this.generateGameShape();
+						lastShape = currentTime - (deltaS % shapeTimeOut);
+					}
+
+					this.activeGameShapes.forEach((activeShape: GameShape) => {
+						if (!this.moveShape(activeShape, Direction.Down)) {
+							if (activeShape.position.y <= 0) {
+								return this.endGame();
 							}
 
-							this.shapeQueued = true;
-						}
-
-						this.activeGameShapes.forEach((activeShape: GameShape) => {
-							if (!this.moveShape(activeShape, Direction.Down)) {
-								if (activeShape.position.y <= 0) {
-									if (!this.shapeToEnd) {
-										this.shapeToEnd = activeShape;
-									} else {
-										if (this.shapeToEnd.position.y <= 0) {
-											return this.endGame();
-										}
-									}
+							this.activeGameShapes = this.activeGameShapes.filter((gameShape: GameShape) => {
+								if (gameShape.id === activeShape.id) {
+									this.staticGameShapes.push(gameShape);
 								}
 
-								this.activeGameShapes = this.activeGameShapes.filter((gameShape: GameShape) => {
-									if (gameShape.id === activeShape.id) {
-										this.staticGameShapes.push(gameShape);
-									}
+								return gameShape.id !== activeShape.id;
+							});
+						}
+					});
+				}
 
-									return gameShape.id !== activeShape.id;
-								});
-							}
-						});
-					}
-				}, GAME_SPEED);
-			}, 400);
+				lastTime = currentTime - (delta % interval);
+			}
 		}
 
 		private moveShape(gameShape: GameShape, dir: Direction) {
@@ -152,19 +172,9 @@
 			return true;
 		}
 
-		@Watch("gameStatus")
-		private onGameStatusChanged(gameStatus: GameStatus) {
-			if (gameStatus === GameStatus.Finished) {
-
-				if (this.gameResult === GameResult.Lost) {
-					console.log("YOU LOST :(");
-				} else {
-					console.log("Game ended!");
-				}
-			}
-		}
-
 		private endGame() {
+			gameFinishTime = new Date().getTime();
+			this.gameFinish = true;
 			console.log("YOU LOST :(");
 			this.gameResult = GameResult.Lost;
 			this.gameStatus = GameStatus.Finished;
@@ -172,43 +182,42 @@
 
 		private initializeKeyListeners() {
 			window.addEventListener("keydown", (e) => {
-				// Kill game interval
-				if (e.ctrlKey && e.code === "KeyK") {
-					e.preventDefault();
-					window.clearInterval(this.gameInterval);
-				}
+				// if (e.keyCode === 27 && !this.gameOver) {
+				// 	return this.gameStatus = this.isPaused ? GameStatus.InProgress : GameStatus.Paused;
+				// }
 
-				if (e.keyCode === 27) {
-					return this.gameStatus = this.isPaused ? GameStatus.InProgress : GameStatus.Paused;
-				}
+				// if (this.isPaused) {
+				// 	return;
+				// }
 
-				if (this.isPaused) {
-					return;
-				}
-
-				if (e.keyCode >= 65 && e.keyCode <= 90) {
-					this.userInput += e.key.toLowerCase();
-				}
-
-				if (e.keyCode === 8) {
-					this.userInput = this.userInput.substring(0, this.userInput.length - 1);
-				}
-
-				if (e.keyCode === 13) {
-					if (this.gameOver) {
+				if (this.gameOver || (!this.gameOver && !this.gameStarted)) {
+					if (e.keyCode === 13 && (currentTime-gameFinishTime) > 1000) {
 						return this.resetGame();
 					}
+				} else {
+					if (e.keyCode >= 65 && e.keyCode <= 90) {
+						this.userInput += e.key.toLowerCase();
+					}
 
-					const testInput = this.userInput;
-					this.userInput = "";
-					if (WORD_STORE.includes(testInput)) {
-						this.shapesWithKeyword(testInput).forEach((gameShape: GameShape) => {
-							if (gameShape.isSuper) {
-								this.clearBoard();
-							} else {
-								this.destroyGameShape(gameShape);
-							}
-						});
+					if (e.keyCode === 8) {
+						this.userInput = this.userInput.substring(0, this.userInput.length - 1);
+					}
+
+					if (e.keyCode === 13) {
+
+						const testInput = this.userInput;
+						this.userInput = "";
+						if (WORD_STORE.includes(testInput)) {
+							this.shapesWithKeyword(testInput).forEach((gameShape: GameShape) => {
+								if (gameShape.isSuper) {
+									this.userScore += 50 * this.letterShapeMap[gameShape.shapeName].length;
+									this.clearShapeType(gameShape.shapeName);
+								} else {
+									this.destroyGameShape(gameShape);
+									this.userScore += 25;
+								}
+							});
+						}
 					}
 				}
 			});
@@ -226,7 +235,20 @@
 			return [...staticKeywordShapes, ...activeKeywordShapes];
 		}
 
-		private destroyGameShape(gameShape: GameShape) {
+		private clearShapeType(shapeType: string) {
+			this.letterShapeMap[shapeType].forEach((gameShape: GameShape) => {
+				this.destroyGameShape(gameShape, true);
+			});
+
+			this.letterShapeMap[shapeType] = [];
+		}
+
+		private destroyGameShape(gameShape: GameShape, clearing?: boolean) {
+			if (!clearing) {
+				const shapeMapIndex: number = this.letterShapeMap[gameShape.shapeName].indexOf(gameShape);
+				this.letterShapeMap[gameShape.shapeName].splice(shapeMapIndex, 1);
+			}
+
 			this.staticGameShapes = this.staticGameShapes.filter((staticShape: GameShape) => {
 				if (staticShape.id === gameShape.id) {
 					this.setGameCoordinates(false, staticShape.worldCoords);
@@ -251,19 +273,13 @@
 			this.staticGameShapes = [];
 		}
 
-		private clearBoard() {
-			this.activeGameShapes = [];
-			this.staticGameShapes = [];
-			this.resetGameCoordinates();
-		}
-
 		private generateGameShape() {
 			let isSuper = false;
-			let superChance = 0.01;
+			let superChance = 0.015;
 
 			this.gameCoordinates.forEach((xCoord) => {
 				if (xCoord[8]) {
-					superChance = 0.3;
+					superChance = 0.05;
 				}
 			});
 
@@ -273,10 +289,9 @@
 
 			const randIndex: number = ShapeBody.getRandomInt(Object.keys(shapes).length);
 			const shapeName: string = Object.keys(shapes)[randIndex];
-
 			const position: Vector = {x: ShapeBody.getRandomInt(GAME_WIDTH - 3), y: 0};
 
-			this.activeGameShapes.push({
+			const newShape: GameShape = {
 				id: uuidv4(),
 				type: shapes[shapeName],
 				shapeName,
@@ -284,7 +299,10 @@
 				keyword: WORD_STORE[ShapeBody.getRandomInt(WORD_STORE.length)],
 				worldCoords: ShapeBody.shapeConstruct(shapes[shapeName], position),
 				isSuper,
-			});
+			};
+
+			this.letterShapeMap[shapeName].push(newShape);
+			this.activeGameShapes.push(newShape);
 		}
 
 		private updateGameShapePosition(gameShape: GameShape, direction: Direction) {
@@ -351,15 +369,18 @@
 		}
 
 		private resetGame() {
-			window.clearInterval(this.gameInterval);
+			this.userScore = 0;
 			this.userInput = "";
-			this.gameResult = GameResult.Undecided;
-			this.gameStatus = GameStatus.Waiting;
 			this.activeGameShapes = [];
 			this.staticGameShapes = [];
 			this.resetGameCoordinates();
-			this.generateGameShape();
-			this.startGame();
+			lastTime     =    (new Date()).getTime();
+			lastShape		 = 		(new Date()).getTime();
+			currentTime  =    0;
+			this.gameFinish = false;
+			this.gameResult = GameResult.Undecided;
+			this.gameStatus = GameStatus.InProgress;
+			this.$forceUpdate();
 		}
 
 		/**
@@ -497,20 +518,35 @@
 			}
 		}
 
-		.user-input {
+		.game-bar {
 			position: absolute;
+			left: 15px;
 			top: 25px;
 			z-index: -1;
-			left: 15px;
 			color: white;
 			font-weight: bold;
+			display: flex;
+			text-shadow: 0 0 3px white;
+			width: 100%;
+			justify-content: space-between;
+			align-items: center;
+
+			.score {
+				.number {
+					width: 50px;
+					margin-right: 30px;
+					padding: 0 5px;
+				}
+			}
+		}
+
+		.user-input {
 			display: flex;
 			align-items: center;
 			padding-left: 5px;
 			padding-top: 5px;
 			letter-spacing: 2px;
 			text-transform: lowercase;
-			text-shadow: 0 0 3px white;
 
 			.cursor {
 				animation: flash 1s infinite;
@@ -545,16 +581,23 @@
 			text-shadow: 0 0 10px #a8ff9a;
 			z-index: 5;
 			display: flex;
-			justify-content: center;
 			align-items: center;
+			padding: 50px 0;
 			flex-direction: column;
+
+			span {
+				font-size: 40px;
+				font-weight: bold;
+				margin-bottom: 30px;
+			}
 
 			.message {
 				font-weight: bold;
-				font-size: 60px;
+				font-size: 35px;
 			}
 
 			.sub-message {
+				margin-top: 10px;
 				animation: flash 1.5s infinite;
 			}
 		}

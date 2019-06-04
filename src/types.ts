@@ -53,6 +53,10 @@ interface StringObject {
 	[key: string]: string;
 }
 
+export interface LetterShapeMap {
+	[key: string]: GameShape[];
+}
+
 export const ShapeColor: StringObject = {
 	I: "#5a828e", // Blue
 	O: "#9e3220", // Red
