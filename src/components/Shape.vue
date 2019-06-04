@@ -197,7 +197,7 @@
 			}
 
 			.error {
-				color: #ff0000;
+				color: #9c9c9c;
 				text-shadow: 1px 1px 2px #7D3621;
 			}
 		}

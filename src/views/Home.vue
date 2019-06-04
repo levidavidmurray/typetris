@@ -1,44 +1,47 @@
 <template>
-	<div class="home" :style="gridTemplate">
-		<div class="overlay">
-			<div class="lines" :style="lineGridTemplate">
-				<div
-						v-for="line in lineHolder"
-						class="line"
-				></div>
+	<div class="display">
+		<div class="shadow"></div>
+		<div class="home" :style="gridTemplate">
+			<div class="overlay">
+				<div class="lines" :style="lineGridTemplate">
+					<div
+							v-for="line in lineHolder"
+							class="line"
+					></div>
+				</div>
+				<div class="corner top-left"></div>
+				<div class="corner top-right"></div>
+				<div class="corner bottom-left"></div>
+				<div class="corner bottom-right"></div>
 			</div>
-			<div class="corner top-left"></div>
-			<div class="corner top-right"></div>
-			<div class="corner bottom-left"></div>
-			<div class="corner bottom-right"></div>
+			<div class="game-over" v-if="gameOver">
+				<div class="message" v-if="gameLost">YOU LOST</div>
+				<div class="message" v-else>YOU WON</div>
+				<p class="sub-message">Press [ENTER] to play again</p>
+			</div>
+			<div class="user-input">
+				<span class="left">></span>
+				<span class="input">{{ userInput }}</span>
+				<span class="cursor">_</span>
+			</div>
+			<Shape
+					v-for="activeShape in activeGameShapes"
+					v-if="(gameStarted || isPaused || gameOver)"
+					@shape-enter="() => setGameCoordinates(true, activeShape.worldCoords)"
+					:key="activeShape.id"
+					:game-shape="activeShape"
+					:user-input="userInput"
+					:game-status="gameStatus"
+			/>
+			<Shape
+					v-for="shape in staticGameShapes"
+					v-if="(gameStarted || isPaused || gameOver)"
+					:key="shape.id"
+					:game-shape="shape"
+					:user-input="userInput"
+					:game-status="gameStatus"
+			/>
 		</div>
-		<div class="game-over" v-if="gameOver">
-			<div class="message" v-if="gameLost">YOU LOST</div>
-			<div class="message" v-else>YOU WON</div>
-			<p class="sub-message">Press [ENTER] to play again</p>
-		</div>
-		<div class="user-input">
-			<span class="left">></span>
-			<span class="input">{{ userInput }}</span>
-			<span class="cursor">_</span>
-		</div>
-		<Shape
-				v-for="activeShape in activeGameShapes"
-				v-if="(gameStarted || isPaused || gameOver)"
-				@shape-enter="() => setGameCoordinates(true, activeShape.worldCoords)"
-				:key="activeShape.id"
-				:game-shape="activeShape"
-				:user-input="userInput"
-				:game-status="gameStatus"
-		/>
-		<Shape
-				v-for="shape in staticGameShapes"
-				v-if="(gameStarted || isPaused || gameOver)"
-				:key="shape.id"
-				:game-shape="shape"
-				:user-input="userInput"
-				:game-status="gameStatus"
-		/>
 	</div>
 </template>
 
@@ -414,6 +417,24 @@
 		}
 	}
 
+	.display {
+		position: relative;
+	}
+
+	.shadow {
+		height: 96%;
+		width: 100%;
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		margin: auto;
+		box-shadow: 0 5px 37px -6px black;
+		border-radius: 10%;
+		z-index: -1;
+	}
+
 	.home {
 		position: relative;
 		display: grid;
@@ -426,8 +447,9 @@
 		grid-auto-columns: 34px;
 		background: lightgrey;
 		background: radial-gradient(circle, #2d6b29 0%, #243834 100%);
-		box-shadow: 0 0 28px -14px black;
+		border-radius: 5%;
 		overflow: hidden;
+		z-index: 1;
 
 		.overlay {
 			position: absolute;
@@ -451,7 +473,7 @@
 				height: 300px;
 				border-radius: 50%;
 				position: absolute;
-				box-shadow: 0 0 120px 70px #2d2a2a;
+				box-shadow: 0 0 150px 80px #2d2a2a;
 
 				&.top-left {
 					top: -300px;
@@ -478,7 +500,7 @@
 		.user-input {
 			position: absolute;
 			top: 25px;
-			z-index: 9;
+			z-index: -1;
 			left: 15px;
 			color: white;
 			font-weight: bold;

@@ -1,8 +1,5 @@
 <template>
 	<div id="app">
-		<div class="header">
-			<h1>TYPETRIS_</h1>
-		</div>
 		<router-view/>
 	</div>
 </template>
@@ -14,7 +11,7 @@
 
 	body {
 		margin: 0;
-		background: #2c332b;
+		background: #353a32;
 		height: 100vh;
 		overflow: hidden;
 	}
@@ -26,6 +23,10 @@
 		text-align: center;
 		color: #2c3e50;
 		margin: 0;
+		height: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
 
 		.header {
 			color: #a8ff9a;
