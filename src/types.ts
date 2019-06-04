@@ -46,7 +46,7 @@ export interface ShapeType {
 export enum GameSpeed {
 	Slow = 300,
 	Regular = 150,
-	Fast = 10,
+	Fast = 25,
 }
 
 interface StringObject {

@@ -51,8 +51,15 @@
 	import uuidv4 from "uuid/v4";
 	import WORD_STORE from "../words";
 
+	const {clientWidth, clientHeight} = document.body;
+	let whRatio: number = clientHeight / clientWidth;
+
+	if (clientWidth > 800) {
+		whRatio = 1.25;
+	}
+
 	const GAME_WIDTH: number = 20;
-	const GAME_HEIGHT: number = Math.ceil(GAME_WIDTH * 1.25);
+	const GAME_HEIGHT: number = Math.ceil(GAME_WIDTH * whRatio);
 	const GAME_SPEED: number = GameSpeed.Fast;
 	const GAME_SIZE: number = GAME_WIDTH * GAME_HEIGHT;
 
@@ -528,6 +535,16 @@
 			.sub-message {
 				animation: flash 1.5s infinite;
 			}
+		}
+	}
+
+	@media only screen and (max-width: 800px) {
+		.home {
+			width: 100vw;
+			height: 100vh;
+			position: absolute;
+			top: 0;
+			left: 0;
 		}
 	}
 </style>

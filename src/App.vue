@@ -30,6 +30,8 @@
 		.header {
 			color: #a8ff9a;
 			text-shadow: 0 0 10px #a8ff9a;
+			margin: 0;
+			padding: 0 10px;
 		}
 	}
 </style>
