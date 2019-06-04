@@ -15,24 +15,18 @@ export enum Direction {
 	Down = "ArrowDown",
 }
 
-export enum Keys {
-	W = "w",
-	A = "a",
-	S = "s",
-	D = "d",
-}
-
 export enum GameStatus {
-	Waiting = "Waiting",
+	PreGame = "PreGame",
 	InProgress = "InProgress",
 	Finished = "Finished",
 	Paused = "Paused",
+	Waiting = "Waiting",
 }
 
 export enum GameResult {
 	Won = "Won",
 	Lost = "Lost",
-	Undecided = "Undecided"
+	Undecided = "Undecided",
 }
 
 export interface GameShape {
@@ -66,3 +60,45 @@ export const ShapeColor: StringObject = {
 	L: "#af973d", // Yellow
 	Z: "#b56f98", // Pink
 };
+
+/**
+ * KEEP
+ */
+
+export interface GameConfig {
+	speed: number;
+	width: number;
+}
+
+export interface ShapeConfig {
+	position: Vector;
+	size: { width: number, height: number };
+	color: string;
+	letter: ShapeLetter;
+}
+
+export interface Entity {
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+}
+
+export interface GamePosition {
+	top: number;
+	bottom: number;
+	left: number;
+	right: number;
+}
+
+export interface ShapeCollidingMap {
+	[key: string]: boolean;
+}
+
+export enum ShapeLetter {
+	I = "I",
+	L = "L",
+	T = "T",
+	O = "O",
+	Z = "Z",
+}

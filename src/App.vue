@@ -1,7 +1,7 @@
 <template>
 	<div id="app">
 		<div class="header">
-			<h1>TYPETRIS</h1>
+			<h1>TYPETRIS_</h1>
 		</div>
 		<router-view/>
 	</div>
@@ -20,7 +20,7 @@
 	}
 
 	#app {
-		font-family: 'Roboto Slab', serif;
+		font-family: 'Roboto Mono', monospace;
 		-webkit-font-smoothing: antialiased;
 		-moz-osx-font-smoothing: grayscale;
 		text-align: center;

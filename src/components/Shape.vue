@@ -66,7 +66,7 @@
 		}
 
 		get shapeColor() {
-			return "#a8ff9a";
+			return "rgba(91, 173, 78, 0.6)";
 			if (this.isSuper) {
 				return "transparent";
 			}
@@ -115,19 +115,19 @@
 
 	@keyframes superText {
 		0% {
-			color: #545454;
+			color: #a8ff9a;
 		}
 
 		50% {
-			color: rgba(255,255,255,0);
+			color: #a8ff9a;
 		}
 
-		80% {
+		50.1% {
 			color: rgba(255,255,255,0);
 		}
 
 		100% {
-			color: #545454;
+			color: rgba(255,255,255,0);
 		}
 	}
 
@@ -164,7 +164,7 @@
 		.keyword {
 			text-transform: uppercase;
 			font-weight: bold;
-			color: #367736;
+			color: #a8ff9a;
 			display: flex;
 
 			font-size: 80%;

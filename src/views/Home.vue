@@ -73,7 +73,7 @@
 		private gameResult: GameResult = GameResult.Undecided;
 
 		public created() {
-			for (let i = 0; i < GAME_HEIGHT*3; i++) {
+			for (let i = 0; i < GAME_HEIGHT * 3; i++) {
 				this.lineHolder.push(i);
 			}
 
@@ -386,17 +386,25 @@
 		}
 
 		get lineGridTemplate() {
-			return {gridTemplateColumns: '1fr', gridTemplateRows: `repeat(${GAME_HEIGHT*3}, 1fr)`};
+			return {gridTemplateColumns: "1fr", gridTemplateRows: `repeat(${GAME_HEIGHT * 3}, 1fr)`};
 		}
 	}
 </script>
 
 <style lang="scss">
 	@keyframes flash {
-		0% { opacity: 1; }
-		50% { opacity: 1; }
-		50.1% { opacity: 0; }
-		100% { opacity: 0; }
+		0% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 1;
+		}
+		50.1% {
+			opacity: 0;
+		}
+		100% {
+			opacity: 0;
+		}
 	}
 
 	.home {
@@ -495,13 +503,17 @@
 
 		.game-over {
 			position: absolute;
-			top: 0; bottom: 0; left: 0; right: 0;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
 			margin: auto;
 			width: 65%;
 			height: 300px;
-			background-color: rgba(0,0,0,0.9);
-			box-shadow: 0 0 6px 16px rgba(0, 0, 0, 0.9);
-			color: white;
+			background-color: rgba(91, 173, 78, 0.85);
+			box-shadow: 0 0 6px 5px rgba(91, 173, 78, 0.85);
+			color: #a8ff9a;
+			text-shadow: 0 0 10px #a8ff9a;
 			z-index: 5;
 			display: flex;
 			justify-content: center;
@@ -509,6 +521,7 @@
 			flex-direction: column;
 
 			.message {
+				font-weight: bold;
 				font-size: 60px;
 			}
 
