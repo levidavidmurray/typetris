@@ -1,0 +1,104 @@
+@keyframes superFlash {
+  0% {
+    background-color: rgba(255,255,255,0);
+  }
+
+  50% {
+    background-color: rgba(255,255,255,0);
+  }
+
+  100% {
+    background-color: rgba(255,255,255,0);
+  }
+}
+
+@keyframes superText {
+  0% {
+    color: white;
+  }
+
+  35% {
+    color: white;
+  }
+
+  35.1% {
+    color: rgba(255,255,255,0);
+  }
+
+  100% {
+    color: rgba(255,255,255,0);
+  }
+}
+
+.shape {
+  display: grid;
+  grid-row-end: span 3;
+  grid-column-end: span 3;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  grid-template-areas: "s0 s1 s2" "s3 s4 s5" "s6 s7 s8";
+  position: relative;
+
+  &.isSuper {
+    .coord {
+      box-shadow: 0 0 4px rgba(255, 255, 255, 0.55);
+      background-color: rgba(255, 255, 255, 0.23);
+    }
+
+    .keyword {
+      animation: superText 2s infinite;
+
+      .active {
+        color: #a8ff9a;
+        text-shadow: 0 0 5px #a8ff9a;
+      }
+    }
+  }
+
+  .coord {
+    background-color: rgba(91, 173, 78, 0.6);
+    box-shadow: 0 0 4px #a8ff9a;
+  }
+
+  .keyword {
+    text-transform: uppercase;
+    font-weight: bold;
+    color: #a8ff9a;
+    display: flex;
+    position: relative;
+
+    font-size: 80%;
+    justify-content: center;
+    align-items: center;
+
+    &.center-3 {
+      flex-direction: column;
+      grid-row-start: 1;
+      grid-column-start: 2;
+      grid-row-end: span 3;
+      grid-column-end: 2;
+    }
+
+    &.top-3 {
+      grid-row-start: 1;
+      grid-row-end: 1;
+      grid-column-start: 1;
+      grid-column-end: span 3;
+    }
+
+    &.shape-O {
+      grid-row: 2 / span 3;
+      grid-column: 1 / span 2;
+    }
+
+    .active {
+      color: white;
+      text-shadow: 0 0 5px white;
+    }
+
+    .error {
+      color: #9c9c9c;
+      text-shadow: 1px 1px 2px #7D3621;
+    }
+  }
+}

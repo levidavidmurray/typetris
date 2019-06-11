@@ -1,0 +1,14 @@
+@import "animations";
+@import "mixins";
+
+// Colors
+$color-green-3: #a8ff9a;
+$color-green-2: rgba(91, 173, 78, 0.85);
+
+// Shadow
+$text-shadow-green-3: 0 0 10px $color-green-3;
+$box-shadow-green-2: 0 0 6px 5px $color-green-2;
+
+// Background
+$bg-terminal: radial-gradient(circle, #2d6b29 0%, #243834 100%);
+

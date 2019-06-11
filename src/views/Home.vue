@@ -423,37 +423,14 @@
 </script>
 
 <style lang="scss">
-	@keyframes flash {
-		0% {
-			opacity: 1;
-		}
-		50% {
-			opacity: 1;
-		}
-		50.1% {
-			opacity: 0;
-		}
-		100% {
-			opacity: 0;
-		}
-	}
+	@import "../assets/scss/variables";
 
 	.display {
 		position: relative;
 	}
 
 	.shadow {
-		height: 96%;
-		width: 100%;
-		position: absolute;
-		top: 0;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		margin: auto;
-		box-shadow: 0 5px 37px -6px black;
-		border-radius: 10%;
-		z-index: -1;
+		@include displayShadow;
 	}
 
 	.home {
@@ -462,8 +439,6 @@
 		margin: 0 auto;
 		width: 641px;
 		height: 854px;
-		grid-template-columns: repeat(15, 1fr);
-		grid-template-rows: repeat(15, 1fr);
 		grid-auto-rows: 34px;
 		grid-auto-columns: 34px;
 		background: lightgrey;

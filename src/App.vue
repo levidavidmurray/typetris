@@ -1,8 +1,17 @@
 <template>
 	<div id="app">
+<!--		<PopUp header="Typetris" footnote="Press [ENTER] to play" :flash="true"/>-->
 		<router-view/>
 	</div>
 </template>
+
+<script lang="ts">
+	import PopUp from "@/components/PopUp.vue";
+
+	export default {
+		components: {PopUp}
+	}
+</script>
 
 <style lang="scss">
 	* {
