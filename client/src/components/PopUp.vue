@@ -4,7 +4,7 @@
 			<slot name="top"></slot>
 		</div>
 		<div class="item bottom">
-			<span class="flash"><slot name="message"></slot></span>
+			<span :class="{flash}"><slot name="message"></slot></span>
 		</div>
 	</div>
 </template>

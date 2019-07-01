@@ -2,10 +2,19 @@
 	<div class="leaderboard">
 		<h1>Leaderboard</h1>
 		<div class="highscores">
-			<div class="highscore unfilled" v-for="index in 10" :key="index">
+			<div class="highscore" v-for="(score, index) in topTen" :key="score._id">
 				<div class="left">
-				<div class="rank">{{ index }}</div>
-				<div class="name">Unfilled</div>
+					<div class="rank">{{ index + 1 }}</div>
+					<div class="name">{{ score.author }}</div>
+				</div>
+				<div class="right">
+					<span class="score">{{ score.score }}</span>
+				</div>
+			</div>
+			<div class="highscore unfilled" v-for="index in numUnfilled" :key="index">
+				<div class="left">
+					<div class="rank">{{ index + 1 }}</div>
+					<div class="name">Unfilled</div>
 				</div>
 				<div class="right">
 					<span class="score">N/A</span>
@@ -16,10 +25,33 @@
 </template>
 
 <script lang="ts">
+	import LeaderboardController from "@/lib/controllers/LeaderboardController";
+	import {EventBus, EventType} from "@/lib/types/EventBus";
+
 	export default {
 		name: "Leaderboards",
 
+		data() {
+			return {
+				controller: new LeaderboardController() as LeaderboardController,
+			};
+		},
 
+		created() {
+			this.controller.getTopTen();
+
+			EventBus.$on(EventType.SubmitScore, () => this.controller.getTopTen());
+		},
+
+		computed: {
+			topTen() {
+					return this.controller.topTen;
+			},
+
+			numUnfilled() {
+				return this.controller.numUnfilled;
+			}
+		}
 	};
 </script>
 

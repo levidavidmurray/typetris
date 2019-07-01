@@ -10,6 +10,7 @@ import Leaderboards from "@/components/Leaderboards.vue";
 import Terminal from "@/components/Terminal.vue";
 import UserInput from "@/components/UserInput.vue";
 import EndScore from "@/components/EndScore.vue";
+import ScoreSubmission from "@/components/ScoreSubmission.vue";
 import Shape from "@/components/Shape.vue";
 
 Vue.component("PopUp", PopUp);
@@ -17,6 +18,7 @@ Vue.component("Leaderboards", Leaderboards);
 Vue.component("Terminal", Terminal);
 Vue.component("UserInput", UserInput);
 Vue.component("EndScore", EndScore);
+Vue.component("ScoreSubmission", ScoreSubmission);
 Vue.component("Shape", Shape);
 
 new Vue({

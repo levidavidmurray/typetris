@@ -1,6 +1,5 @@
 <template>
 	<div id="app">
-<!--		<PopUp header="Typetris" footnote="Press [ENTER] to play" :flash="true"/>-->
 		<router-view/>
 	</div>
 </template>

@@ -1,6 +1,6 @@
 <template>
 	<div class="terminal">
-		<EndScore :score="score" v-if="gameOver"/>
+		<EndScore :score="score" :submission="submission" v-if="gameOver"/>
 		<PopUp v-if="!gameOver && !gameStarted">
 			<template #top>
 				<span>Typetris</span>
@@ -10,7 +10,7 @@
 			</template>
 		</PopUp>
 		<div class="game-bar">
-			<UserInput @input="(value) => setUserInput(value)"/>
+			<UserInput :submission="submission"/>
 			<div class="score">
 				<span class="label">Score:</span>
 				<span class="number">{{ score }}</span>
@@ -49,6 +49,7 @@
 		@Prop() private staticShapes!: GameShape[];
 		@Prop() private score!: Number;
 		@Prop() private userInput!: String;
+		@Prop() private submission!: boolean;
 
 		get gameStarted() {
 			return this.status === GameStatus.InProgress;

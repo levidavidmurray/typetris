@@ -17,6 +17,12 @@
 
 	export default {
 		name: "Home",
+
+		created()
+		{
+
+		},
+
 		components: {Game, About}
 	}
 </script>

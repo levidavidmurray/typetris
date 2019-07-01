@@ -12,6 +12,7 @@
     "quotemark": [true, "double"],
     "indent": [true, "tabs", 2],
     "interface-name": false,
+    "variable-name": false,
     "one-line": false,
     "no-console": false,
     "ordered-imports": false,

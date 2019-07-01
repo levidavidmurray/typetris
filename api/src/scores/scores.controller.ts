@@ -25,7 +25,7 @@ class ScoresController {
 
 	saveAScore = (request: express.Request, response: express.Response) => {
 		const scoreData: Score = request.body;
-		const createdScore = new scoreModel(scoreData);
+		const createdScore = new scoreModel({...scoreData, createdAt: new Date()});
 		createdScore.save()
 			.then((savedScore) => {
 				response.send(savedScore);

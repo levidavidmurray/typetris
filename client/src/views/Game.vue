@@ -1,3 +1,4 @@
+import {GameStatus} from "../types";
 <template>
 	<div class="container">
 		<div class="shadow"></div>
@@ -15,18 +16,20 @@
 					:style="gridTemplate"
 					:status="gameStatus"
 					:user-input="userInput"
+					:submission="promptSubmission"
 					:score="userScore"
 					:active-shapes="activeGameShapes"
 					:static-shapes="staticGameShapes"
 					@shape="(coords) => setGameCoordinates(true, coords)"
+					@set-input="(val) => userInput = val"
 			/>
 		</div>
 	</div>
 </template>
 
 <script lang="ts">
-	import {Component, Vue, Watch} from "vue-property-decorator";
-	import {Direction, GameResult, GameShape, GameSpeed, GameStatus, Vector, LetterShapeMap} from "@/types";
+	import {Component, Vue} from "vue-property-decorator";
+	import {Direction, GameResult, GameShape, GameStatus, LetterShapeMap, Vector} from "@/types";
 	import {ShapeBody} from "@/lib/ShapeBody";
 	import shapes from "@/shapes";
 	import uuidv4 from "uuid/v4";
@@ -34,6 +37,7 @@
 	import {EventBus, EventType} from "@/lib/types/EventBus";
 	import {GameSize, TerminalConfig} from "@/lib/types/Terminal";
 	import {getGameSize} from "@/lib/PlayerInfo";
+	import ScoreApi from "@/lib/api/score.api";
 
 	const gameSize: GameSize = getGameSize();
 
@@ -70,6 +74,7 @@
 		private userInput: string = "";
 		private userScore: number = 0;
 		private gameFinish: boolean = false;
+		private promptSubmission: boolean = false;
 
 		private gameInterval!: number;
 		private gameStatus: GameStatus = GameStatus.Waiting;
@@ -87,7 +92,7 @@
 		}
 
 		private startGame() {
-			this.resetGame();
+			this.resetGame(true);
 		}
 
 		private update() {
@@ -149,10 +154,17 @@
 		private initializeKeyListeners() {
 			window.addEventListener("keydown", (e) => {
 				if (this.gameOver || (!this.gameOver && !this.gameStarted)) {
-					if (e.keyCode === 13 && (currentTime - gameFinishTime) > 1000) {
-						return this.resetGame();
+					if (this.promptSubmission && e.keyCode === 13) {
+						this.submitScore();
 					}
-				} else {
+
+					if (e.keyCode === 13 && e.ctrlKey) {
+						EventBus.$emit(EventType.SetInput, "");
+						this.promptSubmission = true;
+					} else if (e.keyCode === 13 && (currentTime - gameFinishTime) > 1000 && !this.promptSubmission) {
+						this.resetGame(true);
+					}
+				} else if (!this.gameOver) {
 					if (e.keyCode === 13) {
 						this.validateInputWord();
 					}
@@ -322,9 +334,10 @@
 			this.gameCoordinates[position.x][position.y] = value;
 		}
 
-		private resetGame() {
+		private resetGame(start?: boolean) {
+			this.promptSubmission = false;
 			this.userScore = 0;
-			this.userInput = "";
+			EventBus.$emit(EventType.SetInput, "");
 			this.activeGameShapes = [];
 			this.staticGameShapes = [];
 			this.resetGameCoordinates();
@@ -333,8 +346,20 @@
 			currentTime = 0;
 			this.gameFinish = false;
 			this.gameResult = GameResult.Undecided;
-			this.gameStatus = GameStatus.InProgress;
+			this.gameStatus = start ? GameStatus.InProgress : GameStatus.Waiting;
 			this.$forceUpdate();
+		}
+
+		private submitScore() {
+			new ScoreApi().submitScore({
+				author: this.userInput,
+				score: this.userScore,
+				createdAt: new Date(),
+			})
+				.then(() => EventBus.$emit(EventType.SubmitScore));
+
+			this.promptSubmission = false;
+			this.resetGame();
 		}
 
 		/**
