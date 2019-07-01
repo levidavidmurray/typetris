@@ -31,6 +31,7 @@
 }
 
 .shape {
+
   display: grid;
   grid-row-end: span 3;
   grid-column-end: span 3;
@@ -38,6 +39,20 @@
   grid-template-rows: repeat(3, 1fr);
   grid-template-areas: "s0 s1 s2" "s3 s4 s5" "s6 s7 s8";
   position: relative;
+
+  &.demo {
+    margin: 0 auto;
+    width: calc(34px * 3);
+    height: calc(34px * 3);
+
+    &.isSuper {
+      .keyword {
+        animation: none;
+        color: white;
+        text-shadow: 0 0 5px white;
+      }
+    }
+  }
 
   &.isSuper {
     .coord {

@@ -1,5 +1,5 @@
 <template>
-	<div class="shape" :style="positionStyle" :class="{isSuper}">
+	<div class="shape" :style="positionStyle" :class="{isSuper, demo}">
 		<div
 				v-for="(coord, index) in type"
 				v-if="coord"
@@ -20,24 +20,31 @@
 <script lang="ts">
 	import {Component, Prop, Vue} from "vue-property-decorator";
 	import {GameShape, GameStatus, ShapeColor, ShapeType} from "@/types";
+	import uuidv4 from "uuid/v4";
 
 	@Component
 	export default class Shape extends Vue {
 		@Prop() private gameShape!: GameShape;
 		@Prop() private userInput!: string;
 		@Prop() private gameStatus!: GameStatus;
+		@Prop() private demo!: boolean;
 
 		public created() {
-			this.$emit("shape-enter", this.gameShape.worldCoords);
+			if (!this.demo) {
+				this.$emit("shape-enter", this.gameShape.worldCoords);
+			}
 		}
 
 		public isLetterActive(letter: string, index: number) {
-			if (this.userInput.includes(this.keyword) && this.userInput.length > this.keyword.length) {
-				return "error";
-			}
+			if (!this.demo) {
 
-			if (this.keyword.includes(this.userInput) && this.userInput[index] === letter) {
-				return "active";
+				if (this.userInput.includes(this.keyword) && this.userInput.length > this.keyword.length) {
+					return "error";
+				}
+
+				if (this.keyword.includes(this.userInput) && this.userInput[index] === letter) {
+					return "active";
+				}
 			}
 		}
 
@@ -82,12 +89,14 @@
 
 			return {
 				gridArea: `s${index}`
-			}
+			};
 		}
 
 		get positionStyle() {
-			const { x, y } = this.coords;
-			return { gridColumnStart: x + 1, gridRowStart: y + 1 };
+			if (!this.demo) {
+				const {x, y} = this.coords;
+				return {gridColumnStart: x + 1, gridRowStart: y + 1};
+			}
 		}
 
 		get keywordArray() {

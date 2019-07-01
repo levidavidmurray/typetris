@@ -1,10 +1,10 @@
 <template>
 	<div class="popup">
 		<div class="item top">
-			<span>{{ header }}</span>
+			<slot name="top"></slot>
 		</div>
 		<div class="item bottom">
-			<span :class="{flash}">{{ footnote }}</span>
+			<span class="flash"><slot name="message"></slot></span>
 		</div>
 	</div>
 </template>
@@ -15,7 +15,6 @@
 	@Component
 	export default class PopUp extends Vue {
 		@Prop() private header!: string;
-		@Prop() private footnote!: string;
 		@Prop() private flash!: boolean;
 
 		public created()
@@ -35,8 +34,8 @@
 		display: flex;
 		flex-direction: column;
 		padding: 25px 35px;
-		width: 300px;
-		height: 200px;
+		width: 386px;
+		height: 256px;
 		z-index: 3;
 		background-color: $color-green-2;
 		box-shadow: $box-shadow-green-2;
@@ -48,6 +47,7 @@
 			justify-content: center;
 			color: $color-green-3;
 			text-shadow: $text-shadow-green-3;
+			flex-direction: column;
 
 			&.top {
 				align-items: center;
@@ -59,7 +59,8 @@
 			}
 
 			&.bottom {
-				align-items: flex-start;
+				align-items: center;
+				justify-content: flex-start;
 
 				span {
 					&.flash {

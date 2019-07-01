@@ -1,6 +1,6 @@
 <template>
 	<div class="user-input">
-		<input type="text" ref="input" v-model="userInput" @keydown="keyDown" autofocus @blur="inputBlur">
+		<input type="text" ref="input" v-model="userInput" @input="keyDown" autofocus @blur="inputBlur">
 		<div class="input-display">
 			<span class="arrow">></span>
 			<span class="text">{{ userInput }}</span>
@@ -11,21 +11,26 @@
 
 <script lang="ts">
 	import {Component, Prop, Vue} from "vue-property-decorator";
+	import {EventBus, EventType} from "@/lib/types/EventBus";
 
 	@Component
 	export default class UserInput extends Vue {
 		@Prop() public isListening!: boolean;
 		private userInput: string = "";
 
-		public inputBlur()
-		{
+		public created() {
+			EventBus.$on(EventType.SetInput, (value: string) => {
+				this.userInput = value;
+			});
+		}
+
+		public inputBlur() {
 			const input = this.$refs.input as HTMLElement;
 			input.focus();
 		}
 
-		public keyDown(e: KeyboardEvent)
-		{
-			// console.log(e);
+		public keyDown(e: KeyboardEvent) {
+			EventBus.$emit(EventType.SetInput, this.userInput);
 		}
 
 	}
@@ -35,9 +40,6 @@
 	@import "../assets/scss/variables";
 
 	.user-input {
-		margin-top: 17px;
-		margin-left: 20px;
-
 		input {
 			opacity: 0;
 			position: absolute;
@@ -54,14 +56,20 @@
 
 			.text {
 				white-space: pre;
+				font-size: 13px;
 			}
 
 			.arrow {
-				margin-right: 5px;
+				margin-right: 3px;
+				font-size: 1.4em;
+				position: relative;
+				top: -2px;
+				font-weight: bold;
 			}
 
 			.cursor {
 				animation: flash 1s infinite;
+				top: -1px;
 			}
 		}
 	}

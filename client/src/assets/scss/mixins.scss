@@ -16,7 +16,7 @@
   position: relative;
   display: grid;
   margin: 0 auto;
-  width: 1454px;
+  width: 641px;
   height: 854px;
   grid-auto-rows: 34px;
   grid-auto-columns: 34px;
@@ -78,4 +78,9 @@
 
   @include overlayLines;
   @include overlayCorners;
+}
+
+@mixin brandText {
+  color: $color-green-3;
+  text-shadow: $text-shadow-green-3;
 }

@@ -1,55 +1,24 @@
 <template>
-	<div class="display">
+	<div class="container">
 		<div class="shadow"></div>
-		<div class="home" :style="gridTemplate">
+		<div class="display">
 			<div class="overlay">
-				<div class="lines" :style="lineGridTemplate">
-					<div
-							v-for="line in lineHolder"
-							class="line"
-					></div>
+				<div class="lines" :style="lineTemplate">
+					<div v-for="index in numOfLines" :key="index" class="line"></div>
 				</div>
 				<div class="corner top-left"></div>
 				<div class="corner top-right"></div>
 				<div class="corner bottom-left"></div>
 				<div class="corner bottom-right"></div>
 			</div>
-			<div class="game-over" v-if="gameOver">
-				<div class="message">YOUR SCORE</div>
-				<span>{{ userScore }}</span>
-				<p class="sub-message">Press <strong>[ENTER]</strong> to play again</p>
-			</div>
-			<div class="game-over" v-if="!gameOver && !gameStarted">
-				<div class="message" style="font-size: 50px;">Typetris</div>
-				<p class="sub-message" style="margin-top: 40px;">Press <strong>[ENTER]</strong> to play</p>
-			</div>
-			<div class="game-bar">
-				<div class="user-input">
-					<span class="left">></span>
-					<span class="input">{{ userInput }}</span>
-					<span class="cursor">_</span>
-				</div>
-				<div class="score">
-					<span class="label">Score:</span>
-					<span class="number">{{ userScore }}</span>
-				</div>
-			</div>
-			<Shape
-					v-for="activeShape in activeGameShapes"
-					v-if="(gameStarted || isPaused || gameOver)"
-					@shape-enter="() => setGameCoordinates(true, activeShape.worldCoords)"
-					:key="activeShape.id"
-					:game-shape="activeShape"
+			<Terminal
+					:style="gridTemplate"
+					:status="gameStatus"
 					:user-input="userInput"
-					:game-status="gameStatus"
-			/>
-			<Shape
-					v-for="shape in staticGameShapes"
-					v-if="(gameStarted || isPaused || gameOver)"
-					:key="shape.id"
-					:game-shape="shape"
-					:user-input="userInput"
-					:game-status="gameStatus"
+					:score="userScore"
+					:active-shapes="activeGameShapes"
+					:static-shapes="staticGameShapes"
+					@shape="(coords) => setGameCoordinates(true, coords)"
 			/>
 		</div>
 	</div>
@@ -59,36 +28,32 @@
 	import {Component, Vue, Watch} from "vue-property-decorator";
 	import {Direction, GameResult, GameShape, GameSpeed, GameStatus, Vector, LetterShapeMap} from "@/types";
 	import {ShapeBody} from "@/lib/ShapeBody";
-	import Shape from "@/components/Shape.vue";
 	import shapes from "@/shapes";
 	import uuidv4 from "uuid/v4";
 	import WORD_STORE from "../words";
+	import {EventBus, EventType} from "@/lib/types/EventBus";
+	import {GameSize, TerminalConfig} from "@/lib/types/Terminal";
+	import {getGameSize} from "@/lib/PlayerInfo";
 
-	const {clientWidth, clientHeight} = document.body;
-	let whRatio: number = clientHeight / clientWidth;
+	const gameSize: GameSize = getGameSize();
 
-	if (clientWidth > 800) {
-		whRatio = 1.25;
-	}
-
-	const GAME_WIDTH: number = 20;
-	const GAME_HEIGHT: number = Math.ceil(GAME_WIDTH * whRatio);
-	const GAME_SPEED: number = GameSpeed.Fast;
-	const GAME_SIZE: number = GAME_WIDTH * GAME_HEIGHT;
-
-	let	fps				 = 		60,
-		interval     =    1000/fps,
-		shapeTimeOut =    600,
-		lastTime     =    (new Date()).getTime(),
-		lastShape		 = 		(new Date()).getTime(),
+	let fps = 60,
+		interval = 1000 / fps,
+		shapeTimeOut = 600,
+		lastTime = (new Date()).getTime(),
+		lastShape = (new Date()).getTime(),
 		gameFinishTime = 0,
-		currentTime  =    0,
+		currentTime = 0,
 		delta = 0;
 
+	@Component
+	export default class Game extends Vue {
+		private gameSize: GameSize = gameSize;
+		private config: TerminalConfig = {
+			enableUserInput: true,
+			enableScore: false,
+		};
 
-	@Component({components: {Shape}})
-	export default class Home extends Vue {
-		public lineHolder: number[] = [];
 		public activeGameShapes: GameShape[] = [];
 		public staticGameShapes: GameShape[] = [];
 
@@ -111,9 +76,7 @@
 		private gameResult: GameResult = GameResult.Undecided;
 
 		public created() {
-			for (let i = 0; i < GAME_HEIGHT * 3; i++) {
-				this.lineHolder.push(i);
-			}
+			EventBus.$on(EventType.SetInput, this.setUserInput);
 
 			this.resetGameCoordinates();
 			this.initializeKeyListeners();
@@ -131,8 +94,8 @@
 			requestAnimationFrame(this.update.bind(this));
 
 			currentTime = (new Date()).getTime();
-			delta = (currentTime-lastTime);
-			let deltaS = (currentTime-lastShape);
+			delta = (currentTime - lastTime);
+			let deltaS = (currentTime - lastShape);
 
 			if (delta > interval) {
 				if (!this.isPaused && !this.gameFinish && this.gameStarted) {
@@ -162,6 +125,10 @@
 			}
 		}
 
+		public setUserInput(userInput: string) {
+			this.userInput = userInput;
+		}
+
 		private moveShape(gameShape: GameShape, dir: Direction) {
 			if (this.isColliding(gameShape, dir)) {
 				return false;
@@ -175,52 +142,39 @@
 		private endGame() {
 			gameFinishTime = new Date().getTime();
 			this.gameFinish = true;
-			console.log("YOU LOST :(");
 			this.gameResult = GameResult.Lost;
 			this.gameStatus = GameStatus.Finished;
 		}
 
 		private initializeKeyListeners() {
 			window.addEventListener("keydown", (e) => {
-				// if (e.keyCode === 27 && !this.gameOver) {
-				// 	return this.gameStatus = this.isPaused ? GameStatus.InProgress : GameStatus.Paused;
-				// }
-
-				// if (this.isPaused) {
-				// 	return;
-				// }
-
 				if (this.gameOver || (!this.gameOver && !this.gameStarted)) {
-					if (e.keyCode === 13 && (currentTime-gameFinishTime) > 1000) {
+					if (e.keyCode === 13 && (currentTime - gameFinishTime) > 1000) {
 						return this.resetGame();
 					}
 				} else {
-					if (e.keyCode >= 65 && e.keyCode <= 90) {
-						this.userInput += e.key.toLowerCase();
-					}
-
-					if (e.keyCode === 8) {
-						this.userInput = this.userInput.substring(0, this.userInput.length - 1);
-					}
-
 					if (e.keyCode === 13) {
-
-						const testInput = this.userInput;
-						this.userInput = "";
-						if (WORD_STORE.includes(testInput)) {
-							this.shapesWithKeyword(testInput).forEach((gameShape: GameShape) => {
-								if (gameShape.isSuper) {
-									this.userScore += 50 * this.letterShapeMap[gameShape.shapeName].length;
-									this.clearShapeType(gameShape.shapeName);
-								} else {
-									this.destroyGameShape(gameShape);
-									this.userScore += 25;
-								}
-							});
-						}
+						this.validateInputWord();
 					}
 				}
 			});
+		}
+
+		private validateInputWord() {
+			const testInput = this.userInput;
+			EventBus.$emit(EventType.SetInput, "");
+
+			if (WORD_STORE.includes(testInput)) {
+				this.shapesWithKeyword(testInput).forEach((gameShape: GameShape) => {
+					if (gameShape.isSuper) {
+						this.userScore += 50 * this.letterShapeMap[gameShape.shapeName].length;
+						this.clearShapeType(gameShape.shapeName);
+					} else {
+						this.destroyGameShape(gameShape);
+						this.userScore += 25;
+					}
+				});
+			}
 		}
 
 		private shapesWithKeyword(keyword: string) {
@@ -275,21 +229,21 @@
 
 		private generateGameShape() {
 			let isSuper = false;
-			let superChance = 0.015;
+			let superChance = 1;
 
 			this.gameCoordinates.forEach((xCoord) => {
 				if (xCoord[8]) {
-					superChance = 0.05;
+					superChance = 10;
 				}
 			});
 
-			if (Math.random() <= superChance) {
+			if (Math.random() * 100 <= superChance) {
 				isSuper = true;
 			}
 
 			const randIndex: number = ShapeBody.getRandomInt(Object.keys(shapes).length);
 			const shapeName: string = Object.keys(shapes)[randIndex];
-			const position: Vector = {x: ShapeBody.getRandomInt(GAME_WIDTH - 3), y: 0};
+			const position: Vector = {x: ShapeBody.getRandomInt(this.gameSize.width - 3), y: 0};
 
 			const newShape: GameShape = {
 				id: uuidv4(),
@@ -328,7 +282,7 @@
 			for (const currentPosition of gameShape.worldCoords) {
 				const deltaPosition: Vector = ShapeBody.appliedVector(direction, currentPosition);
 
-				if (ShapeBody.validCoords(deltaPosition, GAME_WIDTH, GAME_HEIGHT)) {
+				if (ShapeBody.validCoords(deltaPosition, this.gameSize.width, this.gameSize.height)) {
 					if (!this.coordsAreEmpty(deltaPosition) && !this.coordsAreActiveShape(gameShape, deltaPosition)) {
 						return true;
 					}
@@ -343,10 +297,10 @@
 
 		private resetGameCoordinates() {
 			const gameCoordinates: boolean[][] = [];
-			for (let x = 0; x < GAME_WIDTH; x++) {
+			for (let x = 0; x < this.gameSize.width; x++) {
 				const xCoordinates: boolean[] = [];
 
-				for (let y = 0; y < GAME_HEIGHT; y++) {
+				for (let y = 0; y < this.gameSize.height; y++) {
 					xCoordinates.push(false);
 				}
 
@@ -374,9 +328,9 @@
 			this.activeGameShapes = [];
 			this.staticGameShapes = [];
 			this.resetGameCoordinates();
-			lastTime     =    (new Date()).getTime();
-			lastShape		 = 		(new Date()).getTime();
-			currentTime  =    0;
+			lastTime = (new Date()).getTime();
+			lastShape = (new Date()).getTime();
+			currentTime = 0;
 			this.gameFinish = false;
 			this.gameResult = GameResult.Undecided;
 			this.gameStatus = GameStatus.InProgress;
@@ -413,178 +367,38 @@
 		}
 
 		get gridTemplate() {
-			return {gridTemplateColumns: `repeat(${GAME_WIDTH}, 1fr)`, gridTemplateRows: `repeat(${GAME_HEIGHT}, 1fr)`};
+			return {
+				gridTemplateColumns: `repeat(${this.gameSize.width}, 1fr)`,
+				gridTemplateRows: `repeat(${this.gameSize.height}, 1fr)`
+			};
 		}
 
-		get lineGridTemplate() {
-			return {gridTemplateColumns: "1fr", gridTemplateRows: `repeat(${GAME_HEIGHT * 3}, 1fr)`};
+		get lineTemplate() {
+			return {gridTemplateColumns: "1fr", gridTemplateRows: `repeat(${this.numOfLines}, 1fr)`};
+		}
+
+		get numOfLines() {
+			return this.gameSize.height * 3;
 		}
 	}
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 	@import "../assets/scss/variables";
 
-	.display {
+	.container {
 		position: relative;
-	}
 
-	.shadow {
-		@include displayShadow;
-	}
-
-	.home {
-		position: relative;
-		display: grid;
-		margin: 0 auto;
-		width: 641px;
-		height: 854px;
-		grid-auto-rows: 34px;
-		grid-auto-columns: 34px;
-		background: lightgrey;
-		background: radial-gradient(circle, #2d6b29 0%, #243834 100%);
-		border-radius: 5%;
-		overflow: hidden;
-		z-index: 1;
-
-		.overlay {
-			position: absolute;
-			overflow: hidden;
-			width: 100%;
-			height: 100%;
-			z-index: 99;
-
-			.lines {
-				height: 100%;
-				width: 100%;
-				display: grid;
-
-				.line {
-					border-bottom: 1px solid #4c6b472e;
-				}
-			}
-
-			.corner {
-				width: 300px;
-				height: 300px;
-				border-radius: 50%;
-				position: absolute;
-				box-shadow: 0 0 150px 80px #2d2a2a;
-
-				&.top-left {
-					top: -300px;
-					left: -200px;
-				}
-
-				&.top-right {
-					top: -300px;
-					right: -200px;
-				}
-
-				&.bottom-left {
-					bottom: -300px;
-					left: -200px;
-				}
-
-				&.bottom-right {
-					bottom: -300px;
-					right: -200px;
-				}
-			}
+		.shadow {
+			@include displayShadow;
 		}
 
-		.game-bar {
-			position: absolute;
-			left: 15px;
-			top: 25px;
-			z-index: -1;
-			color: white;
-			font-weight: bold;
-			display: flex;
-			text-shadow: 0 0 3px white;
-			width: 100%;
-			justify-content: space-between;
-			align-items: center;
+		.display {
+			@include displayContainer;
 
-			.score {
-				.number {
-					width: 50px;
-					margin-right: 30px;
-					padding: 0 5px;
-				}
+			.overlay {
+				@include overlayMixin;
 			}
-		}
-
-		.user-input {
-			display: flex;
-			align-items: center;
-			padding-left: 5px;
-			padding-top: 5px;
-			letter-spacing: 2px;
-			text-transform: lowercase;
-
-			.cursor {
-				animation: flash 1s infinite;
-				position: relative;
-				top: -1px;
-			}
-
-			.input {
-				font-size: 13px;
-			}
-
-			.left {
-				margin-right: 3px;
-				font-size: 1.3em;
-				position: relative;
-				top: -2px;
-			}
-		}
-
-		.game-over {
-			position: absolute;
-			top: 0;
-			bottom: 0;
-			left: 0;
-			right: 0;
-			margin: auto;
-			width: 65%;
-			height: 300px;
-			background-color: rgba(91, 173, 78, 0.85);
-			box-shadow: 0 0 6px 5px rgba(91, 173, 78, 0.85);
-			color: #a8ff9a;
-			text-shadow: 0 0 10px #a8ff9a;
-			z-index: 5;
-			display: flex;
-			align-items: center;
-			padding: 50px 0;
-			flex-direction: column;
-
-			span {
-				font-size: 40px;
-				font-weight: bold;
-				margin-bottom: 30px;
-			}
-
-			.message {
-				font-weight: bold;
-				font-size: 35px;
-			}
-
-			.sub-message {
-				margin-top: 10px;
-				animation: flash 1.5s infinite;
-			}
-		}
-	}
-
-	@media only screen and (max-width: 800px) {
-		.home {
-			width: 100vw;
-			height: 100vh;
-			position: absolute;
-			top: 0;
-			left: 0;
 		}
 	}
 </style>
