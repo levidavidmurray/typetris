@@ -1,4 +1,4 @@
-import * as express from "express";
+import express from "express";
 import Score from "./score.interface";
 import scoreModel from "./scores.model";
 

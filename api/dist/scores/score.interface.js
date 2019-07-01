@@ -1,1 +1,1 @@
-//# sourceMappingURL=score.interface.js.map
+"use strict";

@@ -1,4 +1,4 @@
-import * as mongoose from "mongoose";
+import mongoose from "mongoose";
 import Score from "./score.interface";
 
 const scoreSchema = new mongoose.Schema({

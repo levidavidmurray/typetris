@@ -1,6 +1,6 @@
-import * as mongoose from "mongoose";
-import * as cors from "cors";
-import * as express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+import express from "express";
 
 class App {
 	public app: express.Application;
