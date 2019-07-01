@@ -1,7 +1,7 @@
 import axios from "axios";
 
 class BaseApi {
-	private API_URI: string = "http://localhost:5000";
+	private API_URI: string = "https://typetris/api";
 
 	protected get(endpoint: string): Promise<any> {
 		const path = `${this.API_URI}${endpoint}`;
