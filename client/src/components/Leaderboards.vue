@@ -13,7 +13,7 @@
 			</div>
 			<div class="highscore unfilled" v-for="index in numUnfilled" :key="index">
 				<div class="left">
-					<div class="rank">{{ index + 1 }}</div>
+					<div class="rank">{{ index + topTen.length }}</div>
 					<div class="name">Unfilled</div>
 				</div>
 				<div class="right">
