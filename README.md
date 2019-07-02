@@ -1,6 +1,6 @@
 # Typetris 
 
-<p align="center">A tetris-like typing game created using Typescript, utilizing a CSS-grid layout.</p>
+<p align="center">A tetris-like typing game created using Typescript and Vue, utilizing a CSS-grid layout.</p>
 <p align="center"><a href="https://typetris.com">https://typetris.com</a></p>
 <p align="center">
   <img src="TYS-01.png" width="280" >
