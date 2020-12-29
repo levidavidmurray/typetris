@@ -16,10 +16,6 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 export default class PopUp extends Vue {
   @Prop() private header!: string;
   @Prop() private flash!: boolean;
-
-  public created() {
-    console.log(this.flash);
-  }
 }
 </script>
 
