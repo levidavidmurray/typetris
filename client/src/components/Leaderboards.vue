@@ -5,7 +5,7 @@
 			<div class="highscore" v-for="(score, index) in topTen" :key="score._id">
 				<div class="left">
 					<div class="rank">{{ index + 1 }}</div>
-					<div class="name">{{ score.author }}</div>
+					<div class="name">{{ score.player }}</div>
 				</div>
 				<div class="right">
 					<span class="score">{{ score.score }}</span>

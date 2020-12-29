@@ -12,7 +12,7 @@ class ScoreApi extends BaseApi {
 	}
 
 	public submitScore(score: Score): AxiosPromise<Score> {
-		return this.post("/scores", score);
+		return this.post("/scores", {score});
 	}
 }
 

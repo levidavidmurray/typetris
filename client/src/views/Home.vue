@@ -18,13 +18,8 @@
 	export default {
 		name: "Home",
 
-		created()
-		{
-
-		},
-
-		components: {Game, About}
-	}
+		components: {Game, About},
+	};
 </script>
 
 <style scoped lang="scss">

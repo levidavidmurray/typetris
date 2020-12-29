@@ -15,13 +15,13 @@
 
 	@Component
 	export default class UserInput extends Vue {
-		@Prop() public isListening!: boolean;
 		@Prop() public submission!: boolean;
 
 		private userInput: string = "";
 
 		public created() {
 			EventBus.$on(EventType.SetInput, (value: string) => {
+                                this.inputBlur();
 				this.userInput = value;
 			});
 		}

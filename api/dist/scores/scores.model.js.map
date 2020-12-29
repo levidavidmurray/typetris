@@ -1,1 +1,0 @@
-{"version":3,"file":"scores.model.js","sourceRoot":"","sources":["../../src/scores/scores.model.ts"],"names":[],"mappings":"AAAA,OAAO,QAAQ,MAAM,UAAU,CAAC;AAGhC,MAAM,WAAW,GAAG,IAAI,QAAQ,CAAC,MAAM,CAAC;IACvC,SAAS,EAAE,IAAI;IACf,MAAM,EAAE,MAAM;IACd,KAAK,EAAE,MAAM;CACb,CAAC,CAAC;AAEH,MAAM,UAAU,GAAG,QAAQ,CAAC,KAAK,CAA4B,OAAO,EAAE,WAAW,CAAC,CAAC;AAEnF,eAAe,UAAU,CAAC"}

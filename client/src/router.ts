@@ -14,10 +14,5 @@ export default new Router({
 			name: "home",
 			component: Home,
 		},
-		{
-			path: "/game",
-			name: "game",
-			component: Game,
-		},
 	],
 });

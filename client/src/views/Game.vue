@@ -41,14 +41,15 @@ import {GameStatus} from "../types";
 
 	const gameSize: GameSize = getGameSize();
 
-	let fps = 60,
-		interval = 1000 / fps,
-		shapeTimeOut = 600,
-		lastTime = (new Date()).getTime(),
-		lastShape = (new Date()).getTime(),
-		gameFinishTime = 0,
-		currentTime = 0,
-		delta = 0;
+        const fps = 60;
+        const shapeTimeOut = 600;
+
+        let interval = 1000 / fps;
+        let lastTime = (new Date()).getTime();
+        let lastShape = (new Date()).getTime();
+        let gameFinishTime = 0;
+        let currentTime = 0;
+        let delta = 0;
 
 	@Component
 	export default class Game extends Vue {
@@ -100,7 +101,7 @@ import {GameStatus} from "../types";
 
 			currentTime = (new Date()).getTime();
 			delta = (currentTime - lastTime);
-			let deltaS = (currentTime - lastShape);
+			const deltaS = (currentTime - lastShape);
 
 			if (delta > interval) {
 				if (!this.isPaused && !this.gameFinish && this.gameStarted) {
@@ -352,11 +353,10 @@ import {GameStatus} from "../types";
 
 		private submitScore() {
 			new ScoreApi().submitScore({
-				author: this.userInput,
+				player: this.userInput,
 				score: this.userScore,
-				createdAt: new Date(),
 			})
-				.then(() => EventBus.$emit(EventType.SubmitScore));
+                            .then(() => EventBus.$emit(EventType.SubmitScore));
 
 			this.promptSubmission = false;
 			this.resetGame();
@@ -394,7 +394,7 @@ import {GameStatus} from "../types";
 		get gridTemplate() {
 			return {
 				gridTemplateColumns: `repeat(${this.gameSize.width}, 1fr)`,
-				gridTemplateRows: `repeat(${this.gameSize.height}, 1fr)`
+				gridTemplateRows: `repeat(${this.gameSize.height}, 1fr)`,
 			};
 		}
 

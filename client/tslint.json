@@ -10,12 +10,13 @@
   },
   "rules": {
     "quotemark": [true, "double"],
-    "indent": [true, "tabs", 2],
+    "indent": [false, "spaces", 2],
     "interface-name": false,
     "variable-name": false,
     "one-line": false,
     "no-console": false,
     "ordered-imports": false,
+    "member-ordering": false,
     "object-literal-sort-keys": false,
     "no-consecutive-blank-lines": false,
     "no-trailing-whitespace": false
