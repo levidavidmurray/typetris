@@ -1,15 +1,11 @@
 <template>
-	<PopUp>
-
-	</PopUp>
+  <PopUp/>
 </template>
 
 <script>
-	export default {
-		name: "ScoreSubmission"
-	}
+export default {
+  name: "ScoreSubmission",
+};
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

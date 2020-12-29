@@ -1,14 +1,14 @@
 @keyframes superFlash {
   0% {
-    background-color: rgba(255,255,255,0);
+    background-color: rgba(255, 255, 255, 0);
   }
 
   50% {
-    background-color: rgba(255,255,255,0);
+    background-color: rgba(255, 255, 255, 0);
   }
 
   100% {
-    background-color: rgba(255,255,255,0);
+    background-color: rgba(255, 255, 255, 0);
   }
 }
 
@@ -22,16 +22,15 @@
   }
 
   35.1% {
-    color: rgba(255,255,255,0);
+    color: rgba(255, 255, 255, 0);
   }
 
   100% {
-    color: rgba(255,255,255,0);
+    color: rgba(255, 255, 255, 0);
   }
 }
 
 .shape {
-
   display: grid;
   grid-row-end: span 3;
   grid-column-end: span 3;
@@ -113,7 +112,7 @@
 
     .error {
       color: #9c9c9c;
-      text-shadow: 1px 1px 2px #7D3621;
+      text-shadow: 1px 1px 2px #7d3621;
     }
   }
 }

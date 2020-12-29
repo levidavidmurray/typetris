@@ -1,4 +1,3 @@
-
 export const Config = {
   api: {
     PROD: "https://api.typetris.com",
@@ -6,4 +5,3 @@ export const Config = {
   },
   isDev: process.env.NODE_ENV,
 };
-

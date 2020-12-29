@@ -1,9 +1,9 @@
 export interface GameSize {
-	width: number;
-	height: number;
+  width: number;
+  height: number;
 }
 
 export interface TerminalConfig {
-	enableUserInput: boolean;
-	enableScore: boolean;
+  enableUserInput: boolean;
+  enableScore: boolean;
 }
